@@ -19200,9 +19200,9 @@ Source: www.kingbright.com</description>
 <text x="165.1" y="25.4" size="3.81" layer="94">自動昼休み音楽プレイヤー</text>
 <text x="241.3" y="24.13" size="1.778" layer="94">Designed by
 16TE014 中禮 大貴</text>
-<text x="106.68" y="170.18" size="2.54" layer="94">B 制御IC部</text>
-<text x="12.7" y="170.18" size="2.54" layer="94">A 電源回路部</text>
-<text x="15.24" y="66.04" size="2.54" layer="94">C プレイヤーIC部</text>
+<text x="106.68" y="170.18" size="2.54" layer="94">B) 制御IC部</text>
+<text x="12.7" y="170.18" size="2.54" layer="94">A) 電源回路部</text>
+<text x="15.24" y="66.04" size="2.54" layer="94">C) プレイヤーIC部</text>
 </plain>
 <instances>
 <instance part="C1" gate="G$1" x="43.18" y="144.78" smashed="yes">
