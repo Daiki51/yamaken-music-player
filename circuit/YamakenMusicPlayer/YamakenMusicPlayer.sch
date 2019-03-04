@@ -19081,7 +19081,7 @@ Source: www.kingbright.com</description>
 <pin name="DAC_R" x="-17.78" y="2.54" visible="pin" length="middle"/>
 <pin name="DAC_L" x="-17.78" y="0" visible="pin" length="middle"/>
 <pin name="SPK_1" x="-17.78" y="-2.54" visible="pin" length="middle"/>
-<pin name="GND_1" x="-17.78" y="-5.08" visible="pin" length="middle"/>
+<pin name="DAC_GND" x="-17.78" y="-5.08" visible="pin" length="middle"/>
 <pin name="SPK_2" x="-17.78" y="-7.62" visible="pin" length="middle"/>
 <pin name="BUSY" x="17.78" y="10.16" visible="pin" length="middle" rot="R180"/>
 <pin name="USB-" x="17.78" y="7.62" visible="pin" length="middle" rot="R180"/>
@@ -19106,9 +19106,9 @@ Source: www.kingbright.com</description>
 <connect gate="G$1" pin="ADKEY_1" pad="ADKEY1"/>
 <connect gate="G$1" pin="ADKEY_2" pad="ADKEY2"/>
 <connect gate="G$1" pin="BUSY" pad="BUSY"/>
+<connect gate="G$1" pin="DAC_GND" pad="GND_1"/>
 <connect gate="G$1" pin="DAC_L" pad="DAC_L"/>
 <connect gate="G$1" pin="DAC_R" pad="DAC_R"/>
-<connect gate="G$1" pin="GND_1" pad="GND_1"/>
 <connect gate="G$1" pin="GND_2" pad="GND_2"/>
 <connect gate="G$1" pin="IO_1" pad="IO1"/>
 <connect gate="G$1" pin="IO_2" pad="IO2"/>
@@ -19166,7 +19166,6 @@ Source: www.kingbright.com</description>
 <part name="SUPPLY11" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 <part name="C4" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="050-024X044" package3d_urn="urn:adsk.eagle:package:23643/1" value="10μF"/>
 <part name="C5" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="050-024X044" package3d_urn="urn:adsk.eagle:package:23643/1" value="0.1μF"/>
-<part name="SUPPLY12" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 <part name="J2" library="SamacSys_Parts" deviceset="AJ-1780" device=""/>
 <part name="SUPPLY14" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="V+" device=""/>
 <part name="U2" library="ae-esp-wroom" deviceset="AE-ESP-WROOM-02" device=""/>
@@ -19190,6 +19189,7 @@ Source: www.kingbright.com</description>
 <part name="SUPPLY20" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 <part name="JP2" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X3" device="" package3d_urn="urn:adsk.eagle:package:22458/2" value="VOLUME_VR"/>
 <part name="U$1" library="DFPlayer_v1" deviceset="DFPLAYERMINI" device=""/>
+<part name="SUPPLY12" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -19289,9 +19289,6 @@ Source: www.kingbright.com</description>
 <attribute name="NAME" x="180.594" y="150.495" size="1.778" layer="95"/>
 <attribute name="VALUE" x="171.577" y="150.368" size="1.778" layer="96"/>
 </instance>
-<instance part="SUPPLY12" gate="GND" x="124.46" y="7.62" smashed="yes" rot="MR0">
-<attribute name="VALUE" x="47.625" y="47.625" size="1.778" layer="96" rot="MR0"/>
-</instance>
 <instance part="J2" gate="G$1" x="43.18" y="30.48" smashed="yes" rot="MR0">
 <attribute name="NAME" x="26.67" y="38.1" size="1.778" layer="95" rot="MR0" align="center-left"/>
 <attribute name="VALUE" x="26.67" y="35.56" size="1.778" layer="96" rot="MR0" align="center-left"/>
@@ -19369,6 +19366,9 @@ Source: www.kingbright.com</description>
 <instance part="U$1" gate="G$1" x="99.06" y="25.4" smashed="yes">
 <attribute name="NAME" x="86.36" y="38.862" size="1.4224" layer="95"/>
 <attribute name="VALUE" x="86.36" y="12.7" size="1.4224" layer="96"/>
+</instance>
+<instance part="SUPPLY12" gate="GND" x="124.46" y="7.62" smashed="yes">
+<attribute name="VALUE" x="122.555" y="4.445" size="1.778" layer="96"/>
 </instance>
 </instances>
 <busses>
@@ -19512,12 +19512,6 @@ Source: www.kingbright.com</description>
 <pinref part="SUPPLY11" gate="GND" pin="GND"/>
 </segment>
 <segment>
-<wire x1="116.84" y1="20.32" x2="124.46" y2="20.32" width="0.1524" layer="91"/>
-<wire x1="124.46" y1="20.32" x2="124.46" y2="10.16" width="0.1524" layer="91"/>
-<pinref part="SUPPLY12" gate="GND" pin="GND"/>
-<pinref part="U$1" gate="G$1" pin="GND_2"/>
-</segment>
-<segment>
 <pinref part="C6" gate="G$1" pin="1"/>
 <wire x1="53.34" y1="50.8" x2="48.26" y2="50.8" width="0.1524" layer="91"/>
 <wire x1="48.26" y1="50.8" x2="48.26" y2="45.72" width="0.1524" layer="91"/>
@@ -19553,6 +19547,12 @@ Source: www.kingbright.com</description>
 <wire x1="175.26" y1="45.72" x2="175.26" y2="55.88" width="0.1524" layer="91"/>
 <pinref part="JP2" gate="A" pin="3"/>
 <wire x1="175.26" y1="55.88" x2="182.88" y2="55.88" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<wire x1="116.84" y1="20.32" x2="124.46" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="124.46" y1="20.32" x2="124.46" y2="10.16" width="0.1524" layer="91"/>
+<pinref part="U$1" gate="G$1" pin="GND_2"/>
+<pinref part="SUPPLY12" gate="GND" pin="GND"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -19676,7 +19676,7 @@ Source: www.kingbright.com</description>
 <wire x1="43.18" y1="30.48" x2="48.26" y2="30.48" width="0.1524" layer="91"/>
 <wire x1="48.26" y1="30.48" x2="48.26" y2="20.32" width="0.1524" layer="91"/>
 <wire x1="81.28" y1="20.32" x2="48.26" y2="20.32" width="0.1524" layer="91"/>
-<pinref part="U$1" gate="G$1" pin="GND_1"/>
+<pinref part="U$1" gate="G$1" pin="DAC_GND"/>
 </segment>
 </net>
 <net name="PLAY_BTN" class="0">
