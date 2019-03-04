@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE eagle SYSTEM "eagle.dtd">
+<eagle version="9.3.1">
+<drawing>
+<settings>
+<setting alwaysvectorfont="no"/>
+<setting verticaltext="up"/>
+</settings>
+<grid distance="50" unitdist="mil" unit="mil" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
+<layers>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
+<layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="yes"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="29" name="tStop" color="7" fill="3" visible="no" active="yes"/>
+<layer number="30" name="bStop" color="7" fill="6" visible="no" active="yes"/>
+<layer number="31" name="tCream" color="7" fill="4" visible="no" active="yes"/>
+<layer number="32" name="bCream" color="7" fill="5" visible="no" active="yes"/>
+<layer number="33" name="tFinish" color="6" fill="3" visible="no" active="yes"/>
+<layer number="34" name="bFinish" color="6" fill="6" visible="no" active="yes"/>
+<layer number="35" name="tGlue" color="7" fill="4" visible="no" active="yes"/>
+<layer number="36" name="bGlue" color="7" fill="5" visible="no" active="yes"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="39" name="tKeepout" color="4" fill="11" visible="yes" active="yes"/>
+<layer number="40" name="bKeepout" color="1" fill="11" visible="yes" active="yes"/>
+<layer number="41" name="tRestrict" color="4" fill="10" visible="yes" active="yes"/>
+<layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
+<layer number="43" name="vRestrict" color="2" fill="10" visible="yes" active="yes"/>
+<layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
+<layer number="48" name="Document" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="88" name="SimResults" color="9" fill="1" visible="yes" active="yes"/>
+<layer number="89" name="SimProbes" color="9" fill="1" visible="yes" active="yes"/>
+<layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
+<layer number="91" name="Nets" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="92" name="Busses" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="93" name="Pins" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="94" name="Symbols" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="95" name="Names" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="96" name="Values" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="97" name="Info" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="98" name="Guide" color="6" fill="1" visible="yes" active="yes"/>
+</layers>
+<library>
+<packages>
+<package name="AE-ESP-WROOM-02">
+<pad name="P9" x="-3.81" y="0" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P8" x="-3.81" y="2.54" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P7" x="-3.81" y="5.08" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P6" x="-3.81" y="7.62" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P5" x="-3.81" y="10.16" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P4" x="-3.81" y="12.7" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P3" x="-3.81" y="15.24" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P2" x="-3.81" y="17.78" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P1" x="-3.81" y="20.32" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P10" x="3.81" y="0" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P11" x="3.81" y="2.54" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P12" x="3.81" y="5.08" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P13" x="3.81" y="7.62" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P14" x="3.81" y="10.16" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P15" x="3.81" y="12.7" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P16" x="3.81" y="15.24" drill="0.6" diameter="0.9" shape="square"/>
+<wire x1="-6" y1="21" x2="-6" y2="-3" width="0.127" layer="21"/>
+<wire x1="-6" y1="-3" x2="6" y2="-3" width="0.127" layer="21"/>
+<wire x1="6" y1="21" x2="6" y2="-3" width="0.127" layer="21"/>
+<pad name="P17" x="3.81" y="17.78" drill="0.6" diameter="0.9" shape="square"/>
+<pad name="P18" x="3.81" y="20.32" drill="0.6" diameter="0.9" shape="square"/>
+<wire x1="6" y1="21" x2="14.5" y2="21" width="0.127" layer="21"/>
+<wire x1="-6" y1="21" x2="-14.5" y2="21" width="0.127" layer="21"/>
+<wire x1="-14.5" y1="21" x2="-14.5" y2="47" width="0.127" layer="21"/>
+<wire x1="14.5" y1="21" x2="14.5" y2="47" width="0.127" layer="21"/>
+<wire x1="14.5" y1="47" x2="-14.5" y2="47" width="0.127" layer="21"/>
+<text x="-6.35" y="38.1" size="1.27" layer="25">&gt;NAME</text>
+</package>
+</packages>
+<symbols>
+<symbol name="AE-ESP-WROOM-02">
+<wire x1="-10.16" y1="12.7" x2="-10.16" y2="-12.7" width="0.254" layer="94"/>
+<wire x1="-10.16" y1="-12.7" x2="10.16" y2="-12.7" width="0.254" layer="94"/>
+<wire x1="10.16" y1="-12.7" x2="10.16" y2="12.7" width="0.254" layer="94"/>
+<wire x1="-10.16" y1="12.7" x2="10.16" y2="12.7" width="0.254" layer="94"/>
+<pin name="3V3" x="-12.7" y="10.16" length="short"/>
+<pin name="EN" x="-12.7" y="7.62" length="short"/>
+<pin name="IO14" x="-12.7" y="5.08" length="short"/>
+<pin name="IO12" x="-12.7" y="2.54" length="short"/>
+<pin name="IO13" x="-12.7" y="0" length="short"/>
+<pin name="IO15" x="-12.7" y="-2.54" length="short"/>
+<pin name="IO2" x="-12.7" y="-5.08" length="short"/>
+<pin name="IO0" x="-12.7" y="-7.62" length="short"/>
+<pin name="GND@1" x="-12.7" y="-10.16" length="short"/>
+<pin name="GND@2" x="12.7" y="10.16" length="short" rot="R180"/>
+<pin name="IO16" x="12.7" y="7.62" length="short" rot="R180"/>
+<pin name="TOUT" x="12.7" y="5.08" length="short" rot="R180"/>
+<pin name="RST" x="12.7" y="2.54" length="short" rot="R180"/>
+<pin name="IO5" x="12.7" y="0" length="short" rot="R180"/>
+<pin name="GND@3" x="12.7" y="-2.54" length="short" rot="R180"/>
+<pin name="TXD" x="12.7" y="-5.08" length="short" rot="R180"/>
+<pin name="RXD" x="12.7" y="-7.62" length="short" rot="R180"/>
+<pin name="IO4" x="12.7" y="-10.16" length="short" rot="R180"/>
+<text x="-10.16" y="13.462" size="1.27" layer="95">&gt;NAME</text>
+<text x="-10.16" y="-14.732" size="1.27" layer="96">&gt;VALUE</text>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="AE-ESP-WROOM-02" prefix="U">
+<gates>
+<gate name="G$1" symbol="AE-ESP-WROOM-02" x="0" y="2.54"/>
+</gates>
+<devices>
+<device name="" package="AE-ESP-WROOM-02">
+<connects>
+<connect gate="G$1" pin="3V3" pad="P1"/>
+<connect gate="G$1" pin="EN" pad="P2"/>
+<connect gate="G$1" pin="GND@1" pad="P9"/>
+<connect gate="G$1" pin="GND@2" pad="P18"/>
+<connect gate="G$1" pin="GND@3" pad="P13"/>
+<connect gate="G$1" pin="IO0" pad="P8"/>
+<connect gate="G$1" pin="IO12" pad="P4"/>
+<connect gate="G$1" pin="IO13" pad="P5"/>
+<connect gate="G$1" pin="IO14" pad="P3"/>
+<connect gate="G$1" pin="IO15" pad="P6"/>
+<connect gate="G$1" pin="IO16" pad="P17"/>
+<connect gate="G$1" pin="IO2" pad="P7"/>
+<connect gate="G$1" pin="IO4" pad="P10"/>
+<connect gate="G$1" pin="IO5" pad="P14"/>
+<connect gate="G$1" pin="RST" pad="P15"/>
+<connect gate="G$1" pin="RXD" pad="P11"/>
+<connect gate="G$1" pin="TOUT" pad="P16"/>
+<connect gate="G$1" pin="TXD" pad="P12"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
+</drawing>
+</eagle>
