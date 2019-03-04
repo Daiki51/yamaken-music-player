@@ -1,5 +1,8 @@
 # YamakenMusicPlayer
 
+![YamakenMusicPlayer](/doc/images/top.png)
+
+GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Daiki51/yamaken-music-player)
 
 ## ドキュメンテーション
 
