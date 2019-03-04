@@ -41,8 +41,8 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 | 記号       | 品名                   | 個数 | 備考                                                |
 |------------|------------------------|------|-----------------------------------------------------|
 | U1         | NJM2396F33             | 1    | 定電圧リニアレギュレータ                              |
-| U2         | AE-ESP-WROOM-02        | 1    | Wi-Fiモジュール(制御ICとして利用)                     |
-| U3         | DFR0299(DFPlayer Mini) | 1    | MP3モジュール                                        |
+| U2         | AE-ESP-WROOM-02        | 1    | Wi-Fiモジュール (制御ICとして利用)                     |
+| U3         | DFR0299 (DFPlayer Mini) | 1    | MP3モジュール                                        |
 | J1         | MJ-179PH                | 1    | 2.1mm標準DCジャック                                 |
 | J2         | AJ-1780                | 1    | 3.5mmステレオミニジャック                             |
 | R1, R3, R4 | 10kΩ                   | 3    | 1/4W 炭素皮膜抵抗　表示「茶黒橙金」                    |
