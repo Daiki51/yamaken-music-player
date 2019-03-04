@@ -19188,7 +19188,7 @@ Source: www.kingbright.com</description>
 <part name="SUPPLY19" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 <part name="SUPPLY20" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 <part name="JP2" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X3" device="" package3d_urn="urn:adsk.eagle:package:22458/2" value="VOLUME_VR"/>
-<part name="U$1" library="DFPlayer_v1" deviceset="DFPLAYERMINI" device=""/>
+<part name="U3" library="DFPlayer_v1" deviceset="DFPLAYERMINI" device=""/>
 <part name="SUPPLY12" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 </parts>
 <sheets>
@@ -19363,7 +19363,7 @@ Source: www.kingbright.com</description>
 <attribute name="NAME" x="179.07" y="64.135" size="1.778" layer="95"/>
 <attribute name="VALUE" x="179.07" y="50.8" size="1.778" layer="96"/>
 </instance>
-<instance part="U$1" gate="G$1" x="99.06" y="25.4" smashed="yes">
+<instance part="U3" gate="G$1" x="99.06" y="25.4" smashed="yes">
 <attribute name="NAME" x="86.36" y="38.862" size="1.4224" layer="95"/>
 <attribute name="VALUE" x="86.36" y="12.7" size="1.4224" layer="96"/>
 </instance>
@@ -19424,7 +19424,7 @@ Source: www.kingbright.com</description>
 <wire x1="66.04" y1="50.8" x2="66.04" y2="45.72" width="0.1524" layer="91"/>
 <junction x="66.04" y="45.72"/>
 <junction x="73.66" y="45.72"/>
-<pinref part="U$1" gate="G$1" pin="VCC"/>
+<pinref part="U3" gate="G$1" pin="VCC"/>
 </segment>
 <segment>
 <wire x1="154.94" y1="73.66" x2="154.94" y2="71.12" width="0.1524" layer="91"/>
@@ -19551,7 +19551,7 @@ Source: www.kingbright.com</description>
 <segment>
 <wire x1="116.84" y1="20.32" x2="124.46" y2="20.32" width="0.1524" layer="91"/>
 <wire x1="124.46" y1="20.32" x2="124.46" y2="10.16" width="0.1524" layer="91"/>
-<pinref part="U$1" gate="G$1" pin="GND_2"/>
+<pinref part="U3" gate="G$1" pin="GND_2"/>
 <pinref part="SUPPLY12" gate="GND" pin="GND"/>
 </segment>
 </net>
@@ -19640,7 +19640,7 @@ Source: www.kingbright.com</description>
 <segment>
 <wire x1="81.28" y1="33.02" x2="73.66" y2="33.02" width="0.1524" layer="91"/>
 <label x="73.66" y="33.02" size="1.27" layer="95" rot="MR0" xref="yes"/>
-<pinref part="U$1" gate="G$1" pin="RX"/>
+<pinref part="U3" gate="G$1" pin="RX"/>
 </segment>
 </net>
 <net name="PLAYER_RX" class="0">
@@ -19653,21 +19653,21 @@ Source: www.kingbright.com</description>
 <segment>
 <wire x1="81.28" y1="30.48" x2="73.66" y2="30.48" width="0.1524" layer="91"/>
 <label x="73.66" y="30.48" size="1.27" layer="95" rot="MR0" xref="yes"/>
-<pinref part="U$1" gate="G$1" pin="TX"/>
+<pinref part="U3" gate="G$1" pin="TX"/>
 </segment>
 </net>
 <net name="DAC_R" class="0">
 <segment>
 <pinref part="J2" gate="G$1" pin="R_1"/>
 <wire x1="81.28" y1="27.94" x2="43.18" y2="27.94" width="0.1524" layer="91"/>
-<pinref part="U$1" gate="G$1" pin="DAC_R"/>
+<pinref part="U3" gate="G$1" pin="DAC_R"/>
 </segment>
 </net>
 <net name="DAC_L" class="0">
 <segment>
 <pinref part="J2" gate="G$1" pin="L_1"/>
 <wire x1="81.28" y1="25.4" x2="43.18" y2="25.4" width="0.1524" layer="91"/>
-<pinref part="U$1" gate="G$1" pin="DAC_L"/>
+<pinref part="U3" gate="G$1" pin="DAC_L"/>
 </segment>
 </net>
 <net name="DAC_GND" class="0">
@@ -19676,7 +19676,7 @@ Source: www.kingbright.com</description>
 <wire x1="43.18" y1="30.48" x2="48.26" y2="30.48" width="0.1524" layer="91"/>
 <wire x1="48.26" y1="30.48" x2="48.26" y2="20.32" width="0.1524" layer="91"/>
 <wire x1="81.28" y1="20.32" x2="48.26" y2="20.32" width="0.1524" layer="91"/>
-<pinref part="U$1" gate="G$1" pin="DAC_GND"/>
+<pinref part="U3" gate="G$1" pin="DAC_GND"/>
 </segment>
 </net>
 <net name="PLAY_BTN" class="0">
