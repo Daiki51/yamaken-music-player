@@ -27,13 +27,13 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 
 詳細: [schematic.pdf](/circuit/YamakenMusicPlayer/schematic.pdf)
 
-### A 電源回路部
+### A) 電源回路部
 ![Schematic A](/doc/images/schematic_a.png)
 
-### B 制御IC部
+### B) 制御IC部
 ![Schematic B](/doc/images/schematic_b.png)
 
-### C プレイヤーIC部
+### C) プレイヤーIC部
 ![Schematic C](/doc/images/schematic_c.png)
 
 ## ライセンス
