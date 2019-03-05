@@ -1,6 +1,6 @@
 # YamakenMusicPlayer
 
-「自動昼休み音楽プレイヤー(yamaken-music-player)」は毎日同じ時刻に音楽を再生するプレイヤーです。
+「自動昼休み音楽プレイヤー (yamaken-music-player)」は毎日同じ時刻に音楽を再生するプレイヤーです。
 
 ![YamakenMusicPlayer](/doc/images/top.png)
 
@@ -17,11 +17,9 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 
 ## ドキュメンテーション
 
-[再生する曲の変更]()
-[制作方法]()
-
- \
-基板: [board.pdf](/circuit/YamakenMusicPlayer/board.pdf)
+1. [再生する曲の変更]()
+1. [制作方法]()
+1. [ソフトウェアの書き込み方]()
 
 ## 回路図
 
@@ -53,13 +51,20 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 | C3, C5, C7 | 0.1μF                  | 3    | セラミックコンデンサ                                  |
 | C4, C6     | 10μF                   | 2    | セラミックコンデンサ                                 |
 | S1           | DIPスイッチ            | 1    | ブートモード切り替えスイッチ                          |
-| S2         | タクトスイッチ(赤)     | 1    | リセットボタン                                        |
-| S3         | タクトスイッチ(白)     | 1    | 再生ボタン                                            |
+| S2         | タクトスイッチ (赤)     | 1    | リセットボタン                                        |
+| S3         | タクトスイッチ (白)     | 1    | 再生ボタン                                            |
 | LED1       | 緑色LED                | 1    | 抵抗内蔵LED                                         |
 | LED2       | 青色LED                | 1    | 抵抗内蔵LED                                         |
-| JP1, JP2   | ピンヘッダ(3ピン)       | 2    | 2.54mmピッチ シングルライン                          |
+| JP1, JP2   | ピンヘッダ (3ピン)       | 2    | 2.54mmピッチ シングルライン                          |
 |            | SH16K4B102L20KC        | 1    | 小型ボリューム 1kΩB                                  |
 |            | ABS-15                | 1    | 小型ボリューム用ツマミ                                |
+
+
+## 部品配置図
+
+詳細: [schematic.pdf](/circuit/YamakenMusicPlayer/board.pdf)
+
+![Board](/doc/images/board.png)
 
 ## ライセンス
 
