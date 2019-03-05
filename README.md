@@ -15,7 +15,7 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 - IFTTTのサービスを利用し、音楽再生時にユーザーに通知可能
 - Arduino IDEに対応したチップを使用しているため、振る舞いを簡単にカスタマイズ可
 
-## ドキュメンテーション
+## ドキュメント
 
 1. [再生する曲の変更]()
 1. [制作方法]()
@@ -34,7 +34,7 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 ### C プレイヤーIC部
 ![Schematic C](/doc/images/schematic_c.png)
 
-# 部品表
+## 部品表
 
 | 記号       | 品名                   | 個数 | 備考                                                |
 |------------|------------------------|------|-----------------------------------------------------|
