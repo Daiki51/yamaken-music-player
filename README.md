@@ -62,7 +62,7 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 
 ## 部品配置図
 
-詳細: [schematic.pdf](/circuit/YamakenMusicPlayer/board.pdf)
+詳細: [board.pdf](/circuit/YamakenMusicPlayer/board.pdf)
 
 ![Board](/doc/images/board.png)
 
