@@ -66,6 +66,13 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 
 ![Board](/doc/images/board.png)
 
+# 依存ライブラリ
+[DFPlayer - A Mini MP3 Player For Arduino](https://github.com/DFRobot/DFRobotDFPlayerMini)
+[SerialCommand](https://github.com/kroimon/Arduino-SerialCommand)
+[JLed - Advanced LED Library](https://github.com/jandelgado/jled)
+[Switch library](https://github.com/avandalen/avdweb_Switch)
+[Low-Pass-Filter](https://github.com/Billwilliams1952/Arduino-Cascadable-Low-Pass-Filter)
+
 ## ライセンス
 
 [MIT](https://github.com/atom/atom/blob/master/LICENSE.md)
