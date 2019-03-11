@@ -66,7 +66,7 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 
 ![Board](/doc/images/board.png)
 
-# 依存ライブラリ
+## 依存ライブラリ
 
 [DFPlayer - A Mini MP3 Player For Arduino](https://github.com/DFRobot/DFRobotDFPlayerMini)
 
