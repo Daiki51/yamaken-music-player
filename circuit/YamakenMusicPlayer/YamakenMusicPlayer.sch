@@ -16318,33 +16318,6 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <wire x1="8.96" y1="3.15" x2="-1.34" y2="3.15" width="0.2" layer="21"/>
 <wire x1="-1.34" y1="3.15" x2="-1.34" y2="0" width="0.2" layer="21"/>
 </package>
-<package name="AJ-1780">
-<description>&lt;b&gt;AJ-1780&lt;/b&gt;&lt;br&gt;
-</description>
-<pad name="GND" x="1.7" y="0" drill="2" diameter="2.9"/>
-<pad name="R_2" x="10.2" y="5.4" drill="2" diameter="2.9"/>
-<pad name="R_1" x="8.5" y="2.9" drill="2" diameter="2.9"/>
-<pad name="L_2" x="13" y="-4.3" drill="2" diameter="2.9"/>
-<pad name="L_1" x="5.2" y="-4.5" drill="2" diameter="2.9"/>
-<text x="8.678" y="-0.093" size="1.27" layer="25" align="center">&gt;NAME</text>
-<text x="8.678" y="-0.093" size="1.27" layer="27" align="center">&gt;VALUE</text>
-<wire x1="0" y1="5.8" x2="14.2" y2="5.8" width="0.2" layer="51"/>
-<wire x1="14.2" y1="5.8" x2="14.2" y2="-5.8" width="0.2" layer="51"/>
-<wire x1="14.2" y1="-5.8" x2="0" y2="-5.8" width="0.2" layer="51"/>
-<wire x1="0" y1="-5.8" x2="0" y2="5.8" width="0.2" layer="51"/>
-<wire x1="0" y1="3" x2="-3.5" y2="3" width="0.2" layer="51"/>
-<wire x1="-3.5" y1="3" x2="-3.5" y2="-3" width="0.2" layer="51"/>
-<wire x1="-3.5" y1="-3" x2="0" y2="-3" width="0.2" layer="51"/>
-<wire x1="7.1" y1="5.8" x2="0" y2="5.8" width="0.2" layer="21"/>
-<wire x1="0" y1="5.8" x2="0" y2="3" width="0.2" layer="21"/>
-<wire x1="0" y1="3" x2="-3.5" y2="3" width="0.2" layer="21"/>
-<wire x1="-3.5" y1="3" x2="-3.5" y2="-3" width="0.2" layer="21"/>
-<wire x1="-3.5" y1="-3" x2="0" y2="-3" width="0.2" layer="21"/>
-<wire x1="0" y1="-3" x2="0" y2="-5.8" width="0.2" layer="21"/>
-<wire x1="0" y1="-5.8" x2="4.105" y2="-5.8" width="0.2" layer="21"/>
-<wire x1="14.2" y1="5.8" x2="14.2" y2="-3.128" width="0.2" layer="21"/>
-<circle x="-4.179" y="0.051" radius="0.103" width="0.2" layer="25"/>
-</package>
 </packages>
 <symbols>
 <symbol name="NJM2396F33">
@@ -16358,19 +16331,6 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <pin name="VOUT" x="0" y="-2.54" length="middle"/>
 <pin name="GND" x="40.64" y="0" length="middle" rot="R180"/>
 <pin name="ON/OFF_CONTROL" x="40.64" y="-2.54" length="middle" rot="R180"/>
-</symbol>
-<symbol name="AJ-1780">
-<wire x1="5.08" y1="2.54" x2="20.32" y2="2.54" width="0.254" layer="94"/>
-<wire x1="20.32" y1="-7.62" x2="20.32" y2="2.54" width="0.254" layer="94"/>
-<wire x1="20.32" y1="-7.62" x2="5.08" y2="-7.62" width="0.254" layer="94"/>
-<wire x1="5.08" y1="2.54" x2="5.08" y2="-7.62" width="0.254" layer="94"/>
-<text x="16.51" y="7.62" size="1.778" layer="95" align="center-left">&gt;NAME</text>
-<text x="16.51" y="5.08" size="1.778" layer="96" align="center-left">&gt;VALUE</text>
-<pin name="GND" x="0" y="0" length="middle"/>
-<pin name="R_1" x="0" y="-2.54" length="middle"/>
-<pin name="L_1" x="0" y="-5.08" length="middle"/>
-<pin name="R_2" x="25.4" y="0" length="middle" rot="R180"/>
-<pin name="L_2" x="25.4" y="-2.54" length="middle" rot="R180"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -16398,36 +16358,6 @@ Source: &lt;a href="http://www.njr.com/semicon/PDF/NJM2396_E.pdf"&gt; Datasheet 
 <attribute name="MOUSER_PRICE-STOCK" value="" constant="no"/>
 <attribute name="RS_PART_NUMBER" value="1782325" constant="no"/>
 <attribute name="RS_PRICE-STOCK" value="http://uk.rs-online.com/web/p/products/1782325" constant="no"/>
-</technology>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="AJ-1780" prefix="J">
-<description>&lt;b&gt;3.5mm phone jack&lt;/b&gt;&lt;p&gt;
-Source: &lt;a href="http://akizukidenshi.com/download/AJ-1780.pdf"&gt; Datasheet &lt;/a&gt;</description>
-<gates>
-<gate name="G$1" symbol="AJ-1780" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="AJ-1780">
-<connects>
-<connect gate="G$1" pin="GND" pad="GND"/>
-<connect gate="G$1" pin="L_1" pad="L_1"/>
-<connect gate="G$1" pin="L_2" pad="L_2"/>
-<connect gate="G$1" pin="R_1" pad="R_1"/>
-<connect gate="G$1" pin="R_2" pad="R_2"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="DESCRIPTION" value="3.5mm phone jack" constant="no"/>
-<attribute name="HEIGHT" value="mm" constant="no"/>
-<attribute name="MANUFACTURER_NAME" value="United Au-Vi" constant="no"/>
-<attribute name="MANUFACTURER_PART_NUMBER" value="AJ-1780" constant="no"/>
-<attribute name="MOUSER_PART_NUMBER" value="" constant="no"/>
-<attribute name="MOUSER_PRICE-STOCK" value="" constant="no"/>
-<attribute name="RS_PART_NUMBER" value="" constant="no"/>
-<attribute name="RS_PRICE-STOCK" value="" constant="no"/>
 </technology>
 </technologies>
 </device>
@@ -19128,6 +19058,171 @@ Source: www.kingbright.com</description>
 </deviceset>
 </devicesets>
 </library>
+<library name="con-hirschmann" urn="urn:adsk.eagle:library:153">
+<description>&lt;b&gt;Hirschmann Connectors&lt;/b&gt;&lt;p&gt;
+Audio, scart, microphone, headphone&lt;p&gt;
+&lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
+<packages>
+<package name="PG203J" urn="urn:adsk.eagle:footprint:7412/1" library_version="1">
+<description>&lt;b&gt;MIC/HEADPHONE JACK&lt;/b&gt;&lt;p&gt;
+KS-S stereo microphone/headphone jack&lt;p&gt;
+ PG203JN (Schukat)</description>
+<wire x1="-7.112" y1="-5.842" x2="-7.112" y2="-3.048" width="0.1524" layer="21"/>
+<wire x1="7.112" y1="5.842" x2="7.112" y2="-5.842" width="0.1524" layer="21"/>
+<wire x1="-7.112" y1="3.048" x2="-10.16" y2="3.048" width="0.1524" layer="21"/>
+<wire x1="-10.16" y1="-3.048" x2="-7.112" y2="-3.048" width="0.1524" layer="21"/>
+<wire x1="-7.112" y1="-3.048" x2="-7.112" y2="3.048" width="0.1524" layer="21"/>
+<wire x1="-7.112" y1="3.048" x2="-7.112" y2="5.842" width="0.1524" layer="21"/>
+<wire x1="-10.16" y1="3.048" x2="-10.668" y2="2.54" width="0.1524" layer="21"/>
+<wire x1="-10.16" y1="-3.048" x2="-10.668" y2="-2.54" width="0.1524" layer="21"/>
+<wire x1="-10.668" y1="-2.54" x2="-10.668" y2="2.54" width="0.1524" layer="21"/>
+<wire x1="-10.16" y1="-3.048" x2="-10.16" y2="3.048" width="0.1524" layer="21"/>
+<wire x1="-7.112" y1="-5.842" x2="-2.794" y2="-5.842" width="0.1524" layer="21"/>
+<wire x1="-2.794" y1="-5.842" x2="-0.635" y2="-5.842" width="0.1524" layer="51"/>
+<wire x1="-0.635" y1="-5.842" x2="7.112" y2="-5.842" width="0.1524" layer="21"/>
+<wire x1="7.112" y1="5.842" x2="3.81" y2="5.842" width="0.1524" layer="21"/>
+<wire x1="3.81" y1="5.842" x2="1.905" y2="5.842" width="0.1524" layer="51"/>
+<wire x1="1.905" y1="5.842" x2="-7.112" y2="5.842" width="0.1524" layer="21"/>
+<wire x1="-6.731" y1="-1.651" x2="-3.048" y2="-1.651" width="0.1524" layer="51"/>
+<wire x1="-3.048" y1="1.651" x2="-6.731" y2="1.651" width="0.1524" layer="51"/>
+<wire x1="-6.731" y1="-1.651" x2="-6.731" y2="1.651" width="0.1524" layer="51"/>
+<wire x1="-1.905" y1="1.397" x2="-1.651" y2="0.889" width="0.1524" layer="51"/>
+<wire x1="-1.651" y1="0.889" x2="-1.27" y2="2.032" width="0.1524" layer="51"/>
+<wire x1="-0.254" y1="2.032" x2="-0.254" y2="4.953" width="0.1524" layer="51"/>
+<wire x1="-0.254" y1="4.953" x2="1.524" y2="4.953" width="0.1524" layer="51"/>
+<wire x1="-1.27" y1="2.032" x2="-0.762" y2="2.032" width="0.1524" layer="51"/>
+<wire x1="-0.762" y1="2.032" x2="-0.254" y2="2.032" width="0.1524" layer="51"/>
+<wire x1="-0.762" y1="1.524" x2="0.508" y2="1.524" width="0.1524" layer="51"/>
+<wire x1="-0.762" y1="2.032" x2="-0.762" y2="1.905" width="0.1524" layer="51"/>
+<wire x1="-0.889" y1="1.778" x2="-0.762" y2="1.905" width="0.1524" layer="51"/>
+<wire x1="-0.762" y1="1.905" x2="-0.762" y2="1.524" width="0.1524" layer="51"/>
+<wire x1="-0.889" y1="1.778" x2="-0.635" y2="1.778" width="0.1524" layer="51"/>
+<wire x1="-0.635" y1="1.778" x2="-0.762" y2="1.905" width="0.1524" layer="51"/>
+<wire x1="-0.635" y1="-1.524" x2="-0.381" y2="-0.889" width="0.1524" layer="51"/>
+<wire x1="0.127" y1="-2.159" x2="-0.381" y2="-0.889" width="0.1524" layer="51"/>
+<wire x1="0.127" y1="-2.159" x2="0.762" y2="-2.159" width="0.1524" layer="51"/>
+<wire x1="2.667" y1="-2.159" x2="2.667" y2="-5.08" width="0.1524" layer="51"/>
+<wire x1="2.667" y1="-5.08" x2="-0.254" y2="-5.08" width="0.1524" layer="51"/>
+<wire x1="0.762" y1="-2.159" x2="0.762" y2="-2.032" width="0.1524" layer="51"/>
+<wire x1="0.762" y1="-2.159" x2="2.667" y2="-2.159" width="0.1524" layer="51"/>
+<wire x1="0.762" y1="-1.651" x2="5.08" y2="-1.651" width="0.1524" layer="51"/>
+<wire x1="5.08" y1="-1.651" x2="5.08" y2="-2.921" width="0.1524" layer="51"/>
+<wire x1="0.635" y1="-1.905" x2="0.762" y2="-2.032" width="0.1524" layer="51"/>
+<wire x1="0.762" y1="-2.032" x2="0.762" y2="-1.651" width="0.1524" layer="51"/>
+<wire x1="0.762" y1="-2.032" x2="0.889" y2="-1.905" width="0.1524" layer="51"/>
+<wire x1="0.889" y1="-1.905" x2="0.635" y2="-1.905" width="0.1524" layer="51"/>
+<wire x1="0.889" y1="0.508" x2="0.127" y2="0.889" width="0.1524" layer="51"/>
+<wire x1="0.889" y1="0.508" x2="0.889" y2="-0.508" width="0.1524" layer="51"/>
+<wire x1="0.127" y1="-0.889" x2="0.889" y2="-0.508" width="0.1524" layer="51"/>
+<wire x1="0.127" y1="-0.889" x2="-0.381" y2="-0.889" width="0.1524" layer="51"/>
+<wire x1="-3.048" y1="1.651" x2="-3.048" y2="0.889" width="0.1524" layer="51"/>
+<wire x1="-3.048" y1="0.889" x2="-3.048" y2="-0.889" width="0.1524" layer="51"/>
+<wire x1="-3.048" y1="-0.889" x2="-3.048" y2="-1.651" width="0.1524" layer="51"/>
+<wire x1="-1.016" y1="0.889" x2="-1.016" y2="-0.889" width="0.1524" layer="51"/>
+<wire x1="-1.016" y1="0.889" x2="0.127" y2="0.889" width="0.1524" layer="51"/>
+<wire x1="-1.016" y1="-0.889" x2="-2.286" y2="-0.889" width="0.1524" layer="51"/>
+<wire x1="-2.286" y1="0.889" x2="-2.286" y2="-0.889" width="0.1524" layer="51"/>
+<wire x1="-2.286" y1="0.889" x2="-1.651" y2="0.889" width="0.1524" layer="51"/>
+<wire x1="-3.048" y1="0.889" x2="-2.286" y2="0.889" width="0.1524" layer="51"/>
+<wire x1="-2.286" y1="-0.889" x2="-3.048" y2="-0.889" width="0.1524" layer="51"/>
+<wire x1="-1.651" y1="0.889" x2="-1.016" y2="0.889" width="0.1524" layer="51"/>
+<wire x1="-0.381" y1="-0.889" x2="-1.016" y2="-0.889" width="0.1524" layer="51"/>
+<circle x="2.667" y="-2.159" radius="0.127" width="0.1524" layer="51"/>
+<circle x="-0.254" y="2.032" radius="0.127" width="0.1524" layer="51"/>
+<pad name="4" x="5.7404" y="-4.3688" drill="1.4986" shape="octagon"/>
+<pad name="5" x="-1.7526" y="-4.9022" drill="1.4986" shape="octagon"/>
+<pad name="1" x="-5.0038" y="-0.2032" drill="1.4986" shape="octagon"/>
+<pad name="3" x="1.4478" y="2.3876" drill="1.4986"/>
+<pad name="2" x="2.8448" y="4.9022" drill="1.4986"/>
+<text x="-6.731" y="3.81" size="1.27" layer="21" ratio="10">3,5mm</text>
+<text x="-6.35" y="-1.27" size="1.27" layer="51" ratio="10">1</text>
+<text x="4.191" y="3.81" size="1.27" layer="51" ratio="10">2</text>
+<text x="2.794" y="1.27" size="1.27" layer="51" ratio="10">3</text>
+<text x="5.461" y="-2.794" size="1.27" layer="51" ratio="10">4</text>
+<text x="-0.127" y="-4.699" size="1.27" layer="51" ratio="10">5</text>
+<text x="-5.715" y="6.35" size="1.27" layer="25" ratio="10">&gt;NAME</text>
+<text x="-6.35" y="-7.62" size="1.27" layer="27" ratio="10">&gt;VALUE</text>
+</package>
+</packages>
+<packages3d>
+<package3d name="PG203J" urn="urn:adsk.eagle:package:7447/1" type="box" library_version="1">
+<description>MIC/HEADPHONE JACK
+KS-S stereo microphone/headphone jack
+ PG203JN (Schukat)</description>
+<packageinstances>
+<packageinstance name="PG203J"/>
+</packageinstances>
+</package3d>
+</packages3d>
+<symbols>
+<symbol name="KS-S" urn="urn:adsk.eagle:symbol:7411/1" library_version="1">
+<wire x1="1.27" y1="-5.08" x2="2.54" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="2.54" y1="-5.08" x2="2.54" y2="-7.62" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="-7.62" x2="-10.16" y2="-7.62" width="0.1524" layer="94"/>
+<wire x1="-0.635" y1="-3.175" x2="-1.27" y2="-2.54" width="0.254" layer="94"/>
+<wire x1="-1.27" y1="-2.54" x2="-3.81" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="-10.16" y1="-2.54" x2="-7.62" y2="-2.54" width="0.1524" layer="94"/>
+<wire x1="-7.62" y1="-2.54" x2="-7.62" y2="-4.445" width="0.1524" layer="94"/>
+<wire x1="-7.62" y1="-4.445" x2="-8.001" y2="-3.429" width="0.1524" layer="94"/>
+<wire x1="-8.001" y1="-3.429" x2="-7.239" y2="-3.429" width="0.1524" layer="94"/>
+<wire x1="-7.239" y1="-3.429" x2="-7.62" y2="-4.445" width="0.1524" layer="94"/>
+<wire x1="-10.16" y1="0" x2="-7.62" y2="0" width="0.1524" layer="94"/>
+<wire x1="-7.62" y1="0" x2="-7.62" y2="1.905" width="0.1524" layer="94"/>
+<wire x1="-7.62" y1="1.905" x2="-8.001" y2="0.762" width="0.1524" layer="94"/>
+<wire x1="-8.001" y1="0.762" x2="-7.239" y2="0.762" width="0.1524" layer="94"/>
+<wire x1="-7.239" y1="0.762" x2="-7.62" y2="1.905" width="0.1524" layer="94"/>
+<wire x1="-6.35" y1="2.54" x2="-3.81" y2="0" width="0.254" layer="94"/>
+<wire x1="-3.81" y1="0" x2="-3.175" y2="0.635" width="0.254" layer="94"/>
+<wire x1="1.27" y1="-5.08" x2="1.27" y2="2.54" width="0.254" layer="94"/>
+<wire x1="2.54" y1="-5.08" x2="3.81" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="1.27" y1="2.54" x2="3.81" y2="2.54" width="0.254" layer="94"/>
+<wire x1="-10.16" y1="2.54" x2="-6.35" y2="2.54" width="0.254" layer="94"/>
+<wire x1="-10.16" y1="-5.08" x2="-3.81" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="3.81" y1="-5.08" x2="3.81" y2="2.54" width="0.254" layer="94"/>
+<circle x="-10.16" y="-5.08" radius="0.127" width="0.4064" layer="94"/>
+<circle x="-10.16" y="2.54" radius="0.127" width="0.4064" layer="94"/>
+<text x="-7.62" y="3.81" size="1.778" layer="95">&gt;NAME</text>
+<text x="-7.62" y="-10.16" size="1.778" layer="96">&gt;VALUE</text>
+<pin name="5" x="-12.7" y="2.54" visible="pad" length="short" direction="pas"/>
+<pin name="4" x="-12.7" y="0" visible="pad" length="short" direction="pas"/>
+<pin name="3" x="-12.7" y="-2.54" visible="pad" length="short" direction="pas"/>
+<pin name="2" x="-12.7" y="-5.08" visible="pad" length="short" direction="pas"/>
+<pin name="1" x="-12.7" y="-7.62" visible="pad" length="short" direction="pas"/>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="PG203J" urn="urn:adsk.eagle:component:7474/1" prefix="X" library_version="1">
+<description>&lt;b&gt;MIC/HEADPHONE JACK&lt;/b&gt;&lt;p&gt;
+KS-S stereo microphone/headphone jack&lt;p&gt;
+ PG203JN (Schukat)</description>
+<gates>
+<gate name="1" symbol="KS-S" x="5.08" y="2.54"/>
+</gates>
+<devices>
+<device name="" package="PG203J">
+<connects>
+<connect gate="1" pin="1" pad="1"/>
+<connect gate="1" pin="2" pad="2"/>
+<connect gate="1" pin="3" pad="3"/>
+<connect gate="1" pin="4" pad="4"/>
+<connect gate="1" pin="5" pad="5"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:7447/1"/>
+</package3dinstances>
+<technologies>
+<technology name="">
+<attribute name="MF" value="" constant="no"/>
+<attribute name="MPN" value="" constant="no"/>
+<attribute name="OC_FARNELL" value="unknown" constant="no"/>
+<attribute name="OC_NEWARK" value="unknown" constant="no"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -19166,7 +19261,6 @@ Source: www.kingbright.com</description>
 <part name="SUPPLY11" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 <part name="C4" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="050-024X044" package3d_urn="urn:adsk.eagle:package:23643/1" value="10μF"/>
 <part name="C5" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="050-024X044" package3d_urn="urn:adsk.eagle:package:23643/1" value="0.1μF"/>
-<part name="J2" library="SamacSys_Parts" deviceset="AJ-1780" device=""/>
 <part name="SUPPLY14" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="V+" device=""/>
 <part name="U2" library="ae-esp-wroom" deviceset="AE-ESP-WROOM-02" device=""/>
 <part name="S1" library="switch-dil" library_urn="urn:adsk.eagle:library:375" deviceset="DIP02YL" device="" package3d_urn="urn:adsk.eagle:package:27254/2" value="BOOT_OPTION"/>
@@ -19190,6 +19284,7 @@ Source: www.kingbright.com</description>
 <part name="JP2" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X3" device="" package3d_urn="urn:adsk.eagle:package:22458/2" value="VOLUME_VR"/>
 <part name="U3" library="DFPlayer_v1" deviceset="DFPLAYERMINI" device=""/>
 <part name="SUPPLY12" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
+<part name="J2" library="con-hirschmann" library_urn="urn:adsk.eagle:library:153" deviceset="PG203J" device="" package3d_urn="urn:adsk.eagle:package:7447/1"/>
 </parts>
 <sheets>
 <sheet>
@@ -19289,10 +19384,6 @@ Source: www.kingbright.com</description>
 <attribute name="NAME" x="180.594" y="150.495" size="1.778" layer="95"/>
 <attribute name="VALUE" x="171.577" y="150.368" size="1.778" layer="96"/>
 </instance>
-<instance part="J2" gate="G$1" x="43.18" y="30.48" smashed="yes" rot="MR0">
-<attribute name="NAME" x="26.67" y="38.1" size="1.778" layer="95" rot="MR0" align="center-left"/>
-<attribute name="VALUE" x="26.67" y="35.56" size="1.778" layer="96" rot="MR0" align="center-left"/>
-</instance>
 <instance part="SUPPLY14" gate="1" x="73.66" y="60.96" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="74.93" y="62.23" size="1.778" layer="96" rot="MR0"/>
 </instance>
@@ -19369,6 +19460,10 @@ Source: www.kingbright.com</description>
 </instance>
 <instance part="SUPPLY12" gate="GND" x="124.46" y="7.62" smashed="yes">
 <attribute name="VALUE" x="122.555" y="4.445" size="1.778" layer="96"/>
+</instance>
+<instance part="J2" gate="1" x="25.4" y="30.48" smashed="yes" rot="MR0">
+<attribute name="NAME" x="33.02" y="34.29" size="1.778" layer="95" rot="MR0"/>
+<attribute name="VALUE" x="33.02" y="20.32" size="1.778" layer="96" rot="MR0"/>
 </instance>
 </instances>
 <busses>
@@ -19558,12 +19653,16 @@ Source: www.kingbright.com</description>
 <net name="N$1" class="0">
 <segment>
 <pinref part="R1" gate="G$1" pin="1"/>
-<wire x1="215.9" y1="147.32" x2="215.9" y2="132.08" width="0.1524" layer="91"/>
+<wire x1="215.9" y1="147.32" x2="215.9" y2="137.16" width="0.1524" layer="91"/>
+<wire x1="215.9" y1="137.16" x2="215.9" y2="132.08" width="0.1524" layer="91"/>
 <wire x1="215.9" y1="132.08" x2="195.58" y2="132.08" width="0.1524" layer="91"/>
 <pinref part="S2" gate="1" pin="S"/>
 <wire x1="215.9" y1="132.08" x2="215.9" y2="114.3" width="0.1524" layer="91"/>
 <junction x="215.9" y="132.08"/>
 <pinref part="U2" gate="G$1" pin="RST"/>
+<pinref part="U2" gate="G$1" pin="IO16"/>
+<wire x1="195.58" y1="137.16" x2="215.9" y2="137.16" width="0.1524" layer="91"/>
+<junction x="215.9" y="137.16"/>
 </segment>
 </net>
 <net name="N$3" class="0">
@@ -19658,25 +19757,20 @@ Source: www.kingbright.com</description>
 </net>
 <net name="DAC_R" class="0">
 <segment>
-<pinref part="J2" gate="G$1" pin="R_1"/>
 <wire x1="81.28" y1="27.94" x2="43.18" y2="27.94" width="0.1524" layer="91"/>
 <pinref part="U3" gate="G$1" pin="DAC_R"/>
-</segment>
-</net>
-<net name="DAC_L" class="0">
-<segment>
-<pinref part="J2" gate="G$1" pin="L_1"/>
-<wire x1="81.28" y1="25.4" x2="43.18" y2="25.4" width="0.1524" layer="91"/>
-<pinref part="U3" gate="G$1" pin="DAC_L"/>
+<wire x1="43.18" y1="27.94" x2="43.18" y2="25.4" width="0.1524" layer="91"/>
+<pinref part="J2" gate="1" pin="2"/>
+<wire x1="43.18" y1="25.4" x2="38.1" y2="25.4" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="DAC_GND" class="0">
 <segment>
-<pinref part="J2" gate="G$1" pin="GND"/>
-<wire x1="43.18" y1="30.48" x2="48.26" y2="30.48" width="0.1524" layer="91"/>
-<wire x1="48.26" y1="30.48" x2="48.26" y2="20.32" width="0.1524" layer="91"/>
-<wire x1="81.28" y1="20.32" x2="48.26" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="38.1" y1="22.86" x2="43.18" y2="22.86" width="0.1524" layer="91"/>
+<wire x1="43.18" y1="22.86" x2="43.18" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="81.28" y1="20.32" x2="43.18" y2="20.32" width="0.1524" layer="91"/>
 <pinref part="U3" gate="G$1" pin="DAC_GND"/>
+<pinref part="J2" gate="1" pin="1"/>
 </segment>
 </net>
 <net name="PLAY_BTN" class="0">
@@ -19694,8 +19788,8 @@ Source: www.kingbright.com</description>
 <net name="VOLUME" class="0">
 <segment>
 <pinref part="U2" gate="G$1" pin="TOUT"/>
-<wire x1="195.58" y1="134.62" x2="205.74" y2="134.62" width="0.1524" layer="91"/>
-<label x="205.74" y="134.62" size="1.27" layer="95" xref="yes"/>
+<wire x1="195.58" y1="134.62" x2="220.98" y2="134.62" width="0.1524" layer="91"/>
+<label x="220.98" y="134.62" size="1.27" layer="95" xref="yes"/>
 </segment>
 <segment>
 <pinref part="JP2" gate="A" pin="2"/>
@@ -19711,6 +19805,15 @@ Source: www.kingbright.com</description>
 <junction x="154.94" y="60.96"/>
 <pinref part="JP2" gate="A" pin="1"/>
 <wire x1="154.94" y1="60.96" x2="182.88" y2="60.96" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$2" class="0">
+<segment>
+<pinref part="J2" gate="1" pin="5"/>
+<wire x1="38.1" y1="33.02" x2="45.72" y2="33.02" width="0.1524" layer="91"/>
+<wire x1="45.72" y1="33.02" x2="45.72" y2="25.4" width="0.1524" layer="91"/>
+<pinref part="U3" gate="G$1" pin="DAC_L"/>
+<wire x1="45.72" y1="25.4" x2="81.28" y2="25.4" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
