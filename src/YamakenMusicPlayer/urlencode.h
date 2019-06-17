@@ -9,6 +9,8 @@
   Prerequisite Examples:
   https://github.com/zenmanenergy/ESP8266-Arduino-Examples/tree/master/helloworld_serial
 */
+unsigned char h2int(char c);
+
 String urldecode(String str)
 {
     

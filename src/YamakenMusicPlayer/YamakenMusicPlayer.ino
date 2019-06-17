@@ -1,343 +1,424 @@
+#include <math.h>
+#include <time.h>
+#include <FS.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
-#include <DFRobotDFPlayerMini.h>
-#include <SoftwareSerial.h>
-#include <time.h>
 #include <Ticker.h>
-#include <math.h>
-#include "tracknames.h"
-#include "config.h"
+#include <avdweb_Switch.h>
+#include <jled.h>
+#include <Lpf.h>
+#include <ArduinoJson.h>
+#include "src/Arduino-SerialCommand/SerialCommand.h"
+#include "src/pubsubclient-2.7/src/PubSubClient.h"
+#include "setting_loader.h"
+#include "PlayerService.h"
+#include "MusicScheduler.h"
 
-//-------------------------
+//-------------------------------------
 // 定数
-// ------------------------
-
+//-------------------------------------
 // ピン番号
 const int PLAYER_RX_PIN = 4;
 const int PLAYER_TX_PIN = 5;
 const int PLAYING_LED_PIN = 12;
 const int ONLINE_LED_PIN = 13;
-const int PLAY_BTN_PIN = 14;
+const int PLAY_SW_PIN = 14;
 const int VOLUME_PIN = A0;
+
+// ボリュームセンサーのアナログ最大値
+const int VOLUME_SENSOR_MAX = 1001;
 
 // 日本標準時(+0900)
 const int JST = 3600*9;
 
-//-------------------------
+// デフォルトで再生される音楽フォルダ(ボタンが押されたとき)
+const int DEFAULT_MUSIC_FOLDER = 1;
+
+//-------------------------------------
 // グローバル変数
-// ------------------------
-SoftwareSerial mySoftwareSerial(PLAYER_RX_PIN, PLAYER_TX_PIN); // DFPlayerとの通信に使用
-DFRobotDFPlayerMini player;
-bool is_playing = false; // 再生中かどうか(曲と曲との間の待機時間も含む)
-bool is_waiting = false; // 待機中かどうか
-bool is_sync_time = false; // 時刻をインターネット時刻と同期したかどうか
-unsigned long play_start_time; // 最初の曲を再生し始めてからの経過時間
-int last_music_finished = 0; // 最後に曲を再生し終わってからの経過時間
-int total_track; // 総トラック数
-int track_num; // 現在のトラック
-int loop_count = 0;
-int pre_switch_value = HIGH;
-char order[0xff];
-int max_volume = 10;
-String ifttt_base_url = "http://maker.ifttt.com/trigger/" + IFFTT_EVENT + "/with/key/" + IFFTT_KEY + "?value1=";
+//-------------------------------------
+PlayerService playerService(PLAYER_RX_PIN, PLAYER_TX_PIN);
+MusicScheduler musicScheduler;
 
-Ticker ticker;
+// ボタンとLED
+Switch playButton(PLAY_SW_PIN);
+JLed playingLed(PLAYING_LED_PIN);
+JLed onlineLed(ONLINE_LED_PIN);
 
-void refreshLED() { // 10ms毎に呼び出される
-  static int count = 0;
-  static bool sync_time_flag = false;
-  if (!sync_time_flag) {
-    float val = (sin((float)(count % 100) / 100 * PI * 2) + 1.0) / 2;
-    if (is_sync_time && count % 100 == 0) {
-      sync_time_flag = true;
-    }
-    analogWrite(ONLINE_LED_PIN, (int)(val * 0xff));
-  } else {
-    analogWrite(ONLINE_LED_PIN, 0xff);
-  }
-  digitalWrite(PLAYING_LED_PIN, is_playing);
-  count++;
-}
+int volume = 30 / 2;
+LPF volumeFilter(0.2, false); // ボリュームのローパスフィルタ
 
-// 初期設定
-void setup () {
+SerialCommand sCmd; // シリアル通信でコマンドを処理するため
 
-  // シリアル設定
+WiFiSettings wifiSettings; // SSIDとパスワードを格納
+MQTTSettings mqttSettings;
+
+WiFiClient wifiClient;
+PubSubClient client(wifiClient);
+
+//-------------------------------------
+// タイマー割り込み用
+//-------------------------------------
+Ticker tickerUpdateSensorAndLed;
+Ticker tickerCheckWiFi;
+Ticker tickerUpdatePlayer;
+Ticker tickerNotify;
+
+bool wifiConnectedNotifyFlag = false;
+bool playButtonPushed = false;
+bool playerUpdateRequested = false;
+
+//-------------------------------------
+// setup & loop
+//-------------------------------------
+void setup() {
   Serial.begin(115200);
-  delay(500);
-  Serial.println();
-  Serial.println(F("Stating \"Yamaken Music Player App\"..."));
+  printBannerMessage();
+  Serial.println("[INFO] Setup start");
 
-  // LEDを更新する処理を10ms毎に呼び出す
-  ticker.attach_ms(10, refreshLED);
+  // ボリューム用のローパスフィルタを初期化
+  volumeFilter.Reset(volume);
 
-  // 乱数を初期化
-  randomSeed(analogRead(A0));
+  // LEDの点滅(スロー)を開始
+  onlineLed.Breathe(1000).Forever();
+  
+  // タイマーの登録
+  tickerUpdateSensorAndLed.attach_ms(20, updateSensorAndLed);
 
-  pinMode(PLAYING_LED_PIN, OUTPUT);
-  pinMode(ONLINE_LED_PIN, OUTPUT);
-  pinMode(PLAY_BTN_PIN, INPUT_PULLUP);
+  // コマンドの登録
+  sCmd.addCommand("HELP", printCommandHelp);
+  sCmd.addCommand("SET_WIFI", setWiFiCommandCallback);
+  sCmd.addCommand("PLAY", playCommandCallback);
+  sCmd.addCommand("STOP", stopCommandCallback);
+  sCmd.addCommand("SLEEP", sleepCommandCallback);
+  sCmd.setDefaultHandler(defaultCommandCallback);
 
-  setup_player();
-  setup_wifi();
+  // 
+  SPIFFS.begin();
 
-  // 電源投入時に再生開始
-//  play();
+  // Wi-Fiの設定を読み込んで接続
+  loadWiFiSettings(&wifiSettings);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(wifiSettings.ssid, wifiSettings.password);
+  configTime(JST, 0, "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
+  tickerCheckWiFi.attach_ms(100, checkWiFi);
+  
+  loadMQTTSettings(&mqttSettings);
+
+  // プレイヤーを初期化
+  playerService.begin();
+  playerService.onPlay(onPlayCallback);
+  playerService.onStop(onStopCallback);
+  
+  // タイマーの登録
+  tickerUpdatePlayer.attach_ms(50, updatePlayer);
+
+  // スケジューラーを初期化
+  musicScheduler.onStart(onStartCallback);
+  musicScheduler.onEnd(onEndCallback);
+  musicScheduler.bind(&playerService);
+  musicScheduler.loadTask();
+  
+  Serial.println("[INFO] Ready");
 }
 
-void setup_wifi() {
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-}
+int loop_count = 0;
 
-void setup_player() {
-  // DEFPlayerと通信するためにSoftwareSerialを使用
-  mySoftwareSerial.begin(9600);
-  if (!player.begin(mySoftwareSerial)) {
-    Serial.println(F("Unable to begin:"));
-    Serial.println(F("1.Please recheck the connection!"));
-    Serial.println(F("2.Please insert the SD card!"));
-    while(true) delay(1);
+void loop() {
+  sCmd.readSerial();
+  if (playButtonPushed) {
+    if (!playerService.isPlaying()) {
+      playerService.setRepeat(true);
+      playerService.setShuffle(true);
+      playerService.playFolder(DEFAULT_MUSIC_FOLDER);
+    } else {
+      playerService.stop();
+    }
+    playButtonPushed = false;
   }
-  total_track = player.readFileCountsInFolder(MUSIC_FOLDER); //　トラックの数
-  for (int i = 0; i < 0xff; i++) {
-      order[i] = i + 1;
+  if (playerUpdateRequested) {
+    playerService.update();
+    playerService.setVolume(volume);
+    musicScheduler.update();
+    playerUpdateRequested = false;
   }
-  Serial.println(F("DFPlayer Mini initialized"));
-}
-
-void loop () {
-  unsigned long current_time = millis();
-  int switch_value = digitalRead(PLAY_BTN_PIN);
-
-  // Wi-FIに接続できていたら時刻を同期する
-  if (!is_sync_time && WiFi.status() == WL_CONNECTED) {
-
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-
-    configTime(JST, 0, "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
-    delay(1000);
-    print_time();
-    notify("【お知らせ】自動昼休み音楽プレイヤーが起動しました。");
-
-    is_sync_time = true;
+  if (wifiConnectedNotifyFlag) {
+    wifiConnectedNotifyFlag = false;
+    connectBeebotte();
+    notifyEvent("startApp");
   }
-
-  // 音量を更新
-  int val = 30 * (float)analogRead(VOLUME_PIN) / 1023;
-  if (val != max_volume) {
-    max_volume = val;
-    player.volume(max_volume);
+  if (client.connected()) {
+    client.loop();
   }
-
-  if (is_playing) {
-    // スイッチが押されたら
-    if (switch_value == LOW && pre_switch_value != HIGH) {
-      stop();
-      Serial.println(F("stop"));
-      notify("【お知らせ】再生が停止されました(手動)。");
-    }
-    // 連続再生時間が上限を超過したとき
-    if (current_time - play_start_time > MAX_PLAY_DURATION) {
-
-      // 自動的に停止
-      stop();
-      Serial.println(F("automatic stop"));
-      notify("【お知らせ】指定された時刻になったので再生を停止します。");
-    }
-
-    // 曲と曲との間の待機時間が終了したとき
-    if (is_waiting && current_time - last_music_finished > WAIT_TIME) {
-      is_waiting = false;
-
-      // 最後の曲まで再生したとき
-      if (track_num == total_track) {
-        stop();
-        Serial.print(F("finish last track"));
-
-      } else {
-        next();
-        Serial.print(F("play next: "));
-        Serial.println(track_num);
-      }
-    }
-
-    // 現在のプレイヤーの情報を取得し、状況に応じて制御
-    bool is_available = player.available();
-    uint8_t type = player.readType();
-    int read_value = player.read();
-
-    // 現在、再生しているとき
-    if (is_available) {
-      // 曲の最後まで到達したとき
-      if (type == DFPlayerPlayFinished && !is_waiting) {
-        is_waiting = true;
-        last_music_finished = current_time;
-        Serial.print(F("finished track: "));
-        Serial.println(read_value);
-        Serial.println(F("waiting..."));
-      }
-      // カードが抜き取られたとき
-      else if (type == DFPlayerCardRemoved) {
-        is_playing = false;
-        is_waiting = false;
-        Serial.println(F("[warning] card removed"));
-      }
-    }
-    // エラーのとき
-    if (type == DFPlayerError) {
-      // 詳細を表示
-      printDetail(type, read_value);
-    }
-  // 現在、再生していないとき
-  } else {
-    // 自動再生時刻になったら
-    if (is_auto_start_time()) {
-      // 自動的に再生
-      play();
-      Serial.print(F("automatic play"));
-      notify("【お知らせ】指定された時刻になったので再生を開始します。");
-    // スイッチが押されたら
-    } else if (switch_value == LOW && pre_switch_value == HIGH) {
-      play();
-      Serial.println(F("play"));
-    }
+  if (loop_count % 500 == 0) {
+    Serial.print("WiFi.status: ");
+    Serial.println(WiFi.status());
   }
-
-  pre_switch_value = switch_value;
-
-  delay(100);
+  loop_count++;
+  delay(20);
 }
 
-void play() {
-    shuffle_track();
-    player.volume(0);
-    track_num = 1;
-    player.playFolder(MUSIC_FOLDER, order[track_num - 1]);
-    is_playing = true;
-    play_start_time = millis();
-    // フェードイン
-    for (int volume = 0; volume <= max_volume; volume++) {
-      player.volume(volume);
-      delay(50);
-    }
-    notify(String("【お知らせ】『") + track_names[order[track_num - 1] - 1] + "』を再生します。");
+//-------------------------------------
+// シリアルコマンドのコールバック
+//-------------------------------------
+
+// SET_WIFIコマンド
+void setWiFiCommandCallback() {
+  wifiSettings.ssid = sCmd.next();
+  wifiSettings.password = sCmd.next();
+  Serial.println("[LOG] Changed WiFi");
+  Serial.print("  SSID: ");
+  Serial.println(wifiSettings.ssid);
+  Serial.print("  Password: ");
+  Serial.println(wifiSettings.password);
+  saveWiFiSettings(&wifiSettings);
 }
 
-void stop() {
-    // フェードアウト
-    for (int volume = max_volume; volume >= 0; volume--) {
-      player.volume(volume);
-      delay(30);
-    }
-    delay(500);
-    player.pause();
-    is_playing = false;
-}
-
-void next() {
-    track_num++;
-    player.playFolder(MUSIC_FOLDER, order[track_num - 1]);
-    notify(String("【お知らせ】『") + track_names[order[track_num - 1] - 1] + "』を再生します。");
-}
-
-void shuffle_track() {
-    for (int i = 0; i < total_track; i++) {
-        int j = random(total_track);
-        char tmp = order[i];
-        order[i] = order[j];
-        order[j] = tmp;
-    }
-//    for (int i = 0; i < total_track; i++) {
-//      Serial.println((int)order[i]);
-//    }
-}
-
-void notify(String text) {
-  if (!USE_IFFTT) {
+// PLAYコマンド
+void playCommandCallback() {
+  char *folderNumberStr = sCmd.next();
+  if (folderNumberStr == nullptr) {
+    Serial.println(F("[ERROR] No arguments"));
+    printCommandNavi();
     return;
   }
-  String url = ifttt_base_url + urlencode(text);
-  HTTPClient http;
-  http.begin(url);
-  http.GET();
-  http.end();
+  char *fileNumberStr = sCmd.next();
+  if (folderNumberStr == nullptr) {
+    Serial.println(F("[ERROR] No arguments"));
+    printCommandNavi();
+    return;
+  }
+  int folderNumber = atoi(folderNumberStr);
+  int fileNumber = atoi(fileNumberStr);
+  playerService.playFile(folderNumber, fileNumber);
 }
 
-void printDetail(uint8_t type, int value){
-  switch (type) {
-    case TimeOut:
-      Serial.println(F("Time Out!"));
-      break;
-    case WrongStack:
-      Serial.println(F("Stack Wrong!"));
-      break;
-    case DFPlayerCardInserted:
-      Serial.println(F("Card Inserted!"));
-      break;
-    case DFPlayerCardRemoved:
-      Serial.println(F("Card Removed!"));
-      break;
-    case DFPlayerCardOnline:
-      Serial.println(F("Card Online!"));
-      break;
-    case DFPlayerPlayFinished:
-      Serial.print(F("Number:"));
-      Serial.print(value);
-      Serial.println(F(" Play Finished!"));
-      break;
-    case DFPlayerError:
-      Serial.print(F("DFPlayerError:"));
-      switch (value) {
-        case Busy:
-          Serial.println(F("Card not found"));
-          break;
-        case Sleeping:
-          Serial.println(F("Sleeping"));
-          break;
-        case SerialWrongStack:
-          Serial.println(F("Get Wrong Stack"));
-          break;
-        case CheckSumNotMatch:
-          Serial.println(F("Check Sum Not Match"));
-          break;
-        case FileIndexOut:
-          Serial.println(F("File Index Out of Bound"));
-          break;
-        case FileMismatch:
-          Serial.println(F("Cannot Find File"));
-          break;
-        case Advertise:
-          Serial.println(F("In Advertise"));
-          break;
-        default:
-          Serial.println();
-          break;
-      }
-      break;
-    default:
-      break;
+// STOPコマンド
+void stopCommandCallback() {
+  playerService.stop();
+}
+
+// SLEEPコマンド
+void sleepCommandCallback() {
+  char *secStr = sCmd.next();
+  if (secStr == nullptr) {
+    Serial.println(F("[ERROR] No arguments"));
+    printCommandNavi();
+    return;
+  }
+  int sec = atoi(secStr);
+  ESP.deepSleep(sec * 1000 * 1000, WAKE_RF_DEFAULT);
+  delay(1000);
+}
+
+void defaultCommandCallback(const char *cmd) {
+  Serial.print(F("[ERROR] Unknown command: "));
+  Serial.println(cmd);
+  printCommandNavi();
+}
+
+//-------------------------------------
+// タイマー割り込みのコールバック
+//-------------------------------------
+void updateSensorAndLed() {
+  playButton.poll();
+  playingLed.Update();
+  onlineLed.Update();
+  volume = (int)round(volumeFilter.NextValue(round(30.0 * analogRead(VOLUME_PIN) / VOLUME_SENSOR_MAX)));
+  if (playButton.pushed()) {
+    playButtonPushed = true;
   }
 }
 
-void print_time(){
+void checkWiFi() {
+  // Wi-Fiに接続したかどうか確認
+  if (WiFi.status() != WL_CONNECTED) {
+    return;
+  }
+  // 時刻が同期したかどうか確認
   time_t t = time(NULL);
   struct tm *tm;
   tm = localtime(&t);
-  char s[20];
+  if (tm->tm_year + 1900 < 2019) {
+    return;
+  }
+  tickerCheckWiFi.detach();
+  Serial.println("[INFO] WiFi connected");
+  Serial.print("  IP address: ");
+  Serial.println(WiFi.localIP());
+  Serial.print("  Time: ");
+  Serial.println(getTimeStr());
+  onlineLed.On();
+  musicScheduler.begin();
+  wifiConnectedNotifyFlag = true;
+}
+
+void updatePlayer() {
+  playerUpdateRequested = true;
+}
+
+//-------------------------------------
+// プレイヤーのイベントコールバック
+//-------------------------------------
+void onPlayCallback(uint8_t folderNumber, uint8_t fileNumber) {
+  Serial.print("[INFO] Play: ");
+  Serial.print(folderNumber);
+  Serial.print("-");
+  Serial.println(fileNumber);
+  playingLed.On();
+  notifyPlay(folderNumber, fileNumber);
+}
+
+void onStopCallback() {
+  Serial.println("[INFO] Stop");
+  playingLed.Off();
+  notifyEvent("stop");
+}
+
+//-------------------------------------
+// スケジューラーのイベントコールバック
+//-------------------------------------
+void onStartCallback() {
+  Serial.println("[INFO] Start Task");
+  notifyEvent("startTask");
+}
+
+void onEndCallback() {
+  Serial.println("[INFO] End Task ");
+  notifyEvent("endTask");
+}
+
+//-------------------------------------
+// その他
+//-------------------------------------
+String getTimeStr(){
+  time_t t = time(NULL);
+  struct tm *tm;
+  tm = localtime(&t);
+  char s[22];
   sprintf(s, "%04d-%02d-%02d %02d:%02d:%02d",
     tm->tm_year + 1900, tm->tm_mon+1, tm->tm_mday,
     tm->tm_hour, tm->tm_min, tm->tm_sec);
-  Serial.print("Time: ");
-  Serial.println(s);
+  return String(s);
 }
 
-bool is_auto_start_time() {
-  time_t t = time(NULL);
-  struct tm *tm;
-  tm = localtime(&t);
-  return is_sync_time && tm->tm_hour == MUSIC_START_TIME_H && tm->tm_min == MUSIC_START_TIME_M;
+void printBannerMessage() {
+  Serial.println(F(
+    "\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "■■   ■■                                          \n"
+    " ■   ■                                             \n"
+    "  ■ ■   Yamaken Music Player                                \n"
+    "   ■     © 2019 Daiichi Institute of Technology Yamada's lab \n"
+    "   ■                                         \n"
+    "   ■                                         \n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    ));
+  Serial.println(F("Commands are available for this player."));
+  Serial.println(F("Please enter HELP to see how to use the command."));
+  Serial.println(F("このプレイヤーはコマンドが利用可能です。"));
+  Serial.println(F("コマンドの使用方法を調べるにはHELPと入力してください。"));
+  Serial.println(F("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
 }
+
+void printCommandHelp() {
+  Serial.println(F(
+    "[INFO] Command List\n"
+    "  HELP                          show this help message\n"
+    "                                このヘルプを表示します\n"
+    "  PLAY folderNum fileNum        play pecified music\n"
+    "                                指定した音楽を再生します\n"
+    "  STOP                          stop music\n"
+    "                                再生を停止します\n"
+    "  SLEEP sec                     sleep for a specified number of seconds.\n"
+    "                                指定した秒数の間スリープします\n"
+    "  SET_WIFI ssid pass            set Wi-Fi SSID & password\n"
+    "                                接続するWi-FiのSSIDとパスワードを設定します\n"
+    ));
+}
+
+void printCommandNavi() {
+  Serial.println(F("  Please enter HELP to see how to use the command."));
+  Serial.println(F("  コマンドの使用方法を調べるにはHELPと入力してください。"));
+}
+
+const char* clientID = "ESP8266";
+const char* username = "token:token_wMgtfkI7dcGCHU4w";
+const char* receive_topic = "yamaken_music_player/to_player";
+const char* sent_topic = "yamaken_music_player/to_webhook";
+
+const char* mqtt_host = "mqtt.beebotte.com";
+const int port = 1833;
+
+void connectBeebotte() {
+  Serial.println(mqttSettings.hostname);
+  Serial.println(mqttSettings.port);
+  Serial.println(mqttSettings.clientID);
+  Serial.println(mqttSettings.username);
+  Serial.println(mqttSettings.receive_topic);
+  Serial.println(mqttSettings.sent_topic);
+  client.setServer(mqttSettings.hostname.c_str(), mqttSettings.port);
+  client.connect(mqttSettings.clientID.c_str(), mqttSettings.username.c_str(), NULL);
+  
+  if (client.connected()) {
+    Serial.println("[INFO] MQTT connected");
+    client.setCallback(callback);
+    client.subscribe(mqttSettings.receive_topic.c_str());
+  } else {
+    Serial.print("[ERROR] MQTT connection failed: ");
+    Serial.println(client.state());
+  }
+}
+
+// MQTTのPublishイベントを受け取るコールバック
+void callback(char* topic, byte* payload, unsigned int length) {
+  // 受け取ったJSON形式のペイロードをデコードする
+  StaticJsonDocument<MQTT_MAX_PACKET_SIZE> json;
+  deserializeJson(json, payload);
+  char data_char[MQTT_MAX_PACKET_SIZE];
+  strcpy(data_char, (const char*)json["data"]);
+  deserializeJson(json, data_char);
+
+  String command = json["command"];
+  
+  if (command == "play") {
+    int folderNumber = json["folderNumber"];
+    int fileNumber = json["fileNumber"];
+    playerService.playFile(folderNumber, fileNumber);
+  } else if (command == "stop") {
+    playerService.stop();
+  }
+}
+
+void notifyEvent(const char *eventName) {
+  StaticJsonDocument<MQTT_MAX_PACKET_SIZE> doc;
+  auto json = doc.to<JsonObject>();
+  json["event"] = eventName;
+  notify(json);
+}
+
+void notifyPlay(uint8_t folderNumber, uint8_t fileNumber) {
+  StaticJsonDocument<MQTT_MAX_PACKET_SIZE> doc;
+  auto json = doc.to<JsonObject>();
+  json["event"] = "play";
+  json["params"]["folderNumber"] = folderNumber;
+  json["params"]["fileNumber"] = fileNumber;
+  notify(json);
+}
+
+void notify(JsonObject &dataobj) {
+  // Wi-Fiに接続したかどうか確認
+  if (WiFi.status() != WL_CONNECTED) {
+    return;
+  }
+  char data[MQTT_MAX_PACKET_SIZE];
+  serializeJson(dataobj, data);
+  StaticJsonDocument<MQTT_MAX_PACKET_SIZE> doc;
+  auto json = doc.to<JsonObject>();
+  json["data"] = data;
+  char payload[MQTT_MAX_PACKET_SIZE];
+  serializeJson(json, payload);
+  bool a = client.publish(mqttSettings.sent_topic.c_str(), payload);
+  Serial.println(a);
+}
+
