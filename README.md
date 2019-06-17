@@ -2,7 +2,7 @@
 
 「自動昼休み音楽プレイヤー (yamaken-music-player)」は毎日同じ時刻に音楽を再生するプレイヤーです。
 
-![YamakenMusicPlayer](/doc/images/top.png)
+![YamakenMusicPlayer](/doc/images/yamaken_music_player.jpg)
 
 GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Daiki51/yamaken-music-player)
 
