@@ -70,9 +70,9 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 
 [DFPlayer - A Mini MP3 Player For Arduino](https://github.com/DFRobot/DFRobotDFPlayerMini)
 
-[Arduino Client for MQTT (PubSubClient)](https://github.com/knolleary/pubsubclient) [^1]
+[Arduino Client for MQTT (PubSubClient)](https://github.com/knolleary/pubsubclient)
 
-[SerialCommand](https://github.com/kroimon/Arduino-SerialCommand) [^2]
+[SerialCommand](https://github.com/kroimon/Arduino-SerialCommand)
 
 [JLed - Advanced LED Library](https://github.com/jandelgado/jled)
 
@@ -80,7 +80,7 @@ GitHub: [https://github.com/Daiki51/yamaken-music-player](https://github.com/Dai
 
 [Low-Pass-Filter](https://github.com/Billwilliams1952/Arduino-Cascadable-Low-Pass-Filter)
 
-[^1]:[^2]: 本プロジェクトのスケッチを動作させるためには変更が必要です。
+> 本プロジェクトのスケッチを動作させるためには、[Arduino Client for MQTT (PubSubClient)](https://github.com/knolleary/pubsubclient)と[SerialCommand](https://github.com/kroimon/Arduino-SerialCommand)の変更が必要です。
 
 ## ライセンス
 
