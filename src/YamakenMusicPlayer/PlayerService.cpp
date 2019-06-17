@@ -1,6 +1,5 @@
 #include <math.h>
 #include "PlayerService.h"
-#include "setting_loader.h"
 
 static void printDetail(uint8_t type, int value);
 

@@ -1,0 +1,17 @@
+{
+    "music": {
+        "default_folder": 1
+    },
+    "wifi": {
+        "ssid": "************",
+        "password": "************"
+    },
+    "mqtt": {
+        "hostname": "mqtt.beebotte.com",
+        "port": 1883,
+        "client_id": "******",
+        "user_name": "token:******************",
+        "receive_topic": "******************",
+        "sent_topic": "******************"
+    }
+}

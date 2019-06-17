@@ -9,8 +9,7 @@
 #include <Lpf.h>
 #include <ArduinoJson.h>
 #include "src/Arduino-SerialCommand/SerialCommand.h"
-#include "src/pubsubclient-2.7/src/PubSubClient.h"
-#include "setting_loader.h"
+#include "src/pubsubclient/src/PubSubClient.h"
 #include "PlayerService.h"
 #include "MusicScheduler.h"
 
@@ -31,13 +30,14 @@ const int VOLUME_SENSOR_MAX = 1001;
 // 日本標準時(+0900)
 const int JST = 3600*9;
 
-// デフォルトで再生される音楽フォルダ(ボタンが押されたとき)
-const int DEFAULT_MUSIC_FOLDER = 1;
-
 //-------------------------------------
 // グローバル変数
 //-------------------------------------
+
+// DFPlayerとの通信を担当するクラス
 PlayerService playerService(PLAYER_RX_PIN, PLAYER_TX_PIN);
+
+// 定期的な再生スケジューリングを管理するクラス
 MusicScheduler musicScheduler;
 
 // ボタンとLED
@@ -50,11 +50,12 @@ LPF volumeFilter(0.2, false); // ボリュームのローパスフィルタ
 
 SerialCommand sCmd; // シリアル通信でコマンドを処理するため
 
-WiFiSettings wifiSettings; // SSIDとパスワードを格納
-MQTTSettings mqttSettings;
-
 WiFiClient wifiClient;
-PubSubClient client(wifiClient);
+PubSubClient mqttClient(wifiClient);
+
+// 設定ストア(JSON形式)
+StaticJsonDocument<1000> config;
+bool isLoaded = false;
 
 //-------------------------------------
 // タイマー割り込み用
@@ -62,11 +63,13 @@ PubSubClient client(wifiClient);
 Ticker tickerUpdateSensorAndLed;
 Ticker tickerCheckWiFi;
 Ticker tickerUpdatePlayer;
-Ticker tickerNotify;
 
 bool wifiConnectedNotifyFlag = false;
 bool playButtonPushed = false;
 bool playerUpdateRequested = false;
+bool wifiConnecting = false;
+int wifiConnectCount = 0;
+int loop_count = 0;
 
 //-------------------------------------
 // setup & loop
@@ -78,32 +81,24 @@ void setup() {
 
   // ボリューム用のローパスフィルタを初期化
   volumeFilter.Reset(volume);
-
-  // LEDの点滅(スロー)を開始
-  onlineLed.Breathe(1000).Forever();
   
   // タイマーの登録
   tickerUpdateSensorAndLed.attach_ms(20, updateSensorAndLed);
 
   // コマンドの登録
-  sCmd.addCommand("HELP", printCommandHelp);
+  sCmd.addCommand("HELP", helpCommandCallback);
   sCmd.addCommand("SET_WIFI", setWiFiCommandCallback);
   sCmd.addCommand("PLAY", playCommandCallback);
   sCmd.addCommand("STOP", stopCommandCallback);
   sCmd.addCommand("SLEEP", sleepCommandCallback);
   sCmd.setDefaultHandler(defaultCommandCallback);
 
-  // 
+  // 設定を読み込む
   SPIFFS.begin();
+  loadConfig();
 
-  // Wi-Fiの設定を読み込んで接続
-  loadWiFiSettings(&wifiSettings);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(wifiSettings.ssid, wifiSettings.password);
-  configTime(JST, 0, "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
-  tickerCheckWiFi.attach_ms(100, checkWiFi);
-  
-  loadMQTTSettings(&mqttSettings);
+  // Wi-Fiに接続
+  connectWiFi();
 
   // プレイヤーを初期化
   playerService.begin();
@@ -122,7 +117,16 @@ void setup() {
   Serial.println("[INFO] Ready");
 }
 
-int loop_count = 0;
+// Wi-Fiに接続
+void connectWiFi() {
+  // LEDの点滅(スロー)を開始
+  onlineLed.Breathe(1000).Forever();
+  WiFi.mode(WIFI_STA);
+  WiFi.begin((const char*)config["wifi"]["ssid"], (const char*)config["wifi"]["password"]);
+  configTime(JST, 0, "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
+  tickerCheckWiFi.attach_ms(100, checkWiFi);
+  wifiConnecting = true;
+}
 
 void loop() {
   sCmd.readSerial();
@@ -130,7 +134,7 @@ void loop() {
     if (!playerService.isPlaying()) {
       playerService.setRepeat(true);
       playerService.setShuffle(true);
-      playerService.playFolder(DEFAULT_MUSIC_FOLDER);
+      playerService.playFolder(config["music"]["default_folder"]);
     } else {
       playerService.stop();
     }
@@ -144,77 +148,34 @@ void loop() {
   }
   if (wifiConnectedNotifyFlag) {
     wifiConnectedNotifyFlag = false;
-    connectBeebotte();
-    notifyEvent("startApp");
+    if (wifiConnectCount == 0) {
+      Serial.println("[INFO] Wi-Fi connected");
+    } else {
+      Serial.println("[INFO] Wi-Fi reconnected");
+    }
+    Serial.print("  IP address: ");
+    Serial.println(WiFi.localIP());
+    Serial.print("  Time: ");
+    Serial.println(getTimeStr());
+    connectMQTT();
+    if (wifiConnectCount == 0) {
+      notifyEvent("startApp");
+    } else {
+      notifyEvent("reconnect");
+    }
+    wifiConnecting = false;
+    wifiConnectCount++;
   }
-  if (client.connected()) {
-    client.loop();
+  if (!wifiConnecting && WiFi.status() != WL_CONNECTED) {
+    Serial.println("[WARN] Wi-Fi disconnected");
+    // Wi-Fiに再接続
+    connectWiFi();
   }
-  if (loop_count % 500 == 0) {
-    Serial.print("WiFi.status: ");
-    Serial.println(WiFi.status());
+  if (mqttClient.connected()) {
+    mqttClient.loop();
   }
   loop_count++;
   delay(20);
-}
-
-//-------------------------------------
-// シリアルコマンドのコールバック
-//-------------------------------------
-
-// SET_WIFIコマンド
-void setWiFiCommandCallback() {
-  wifiSettings.ssid = sCmd.next();
-  wifiSettings.password = sCmd.next();
-  Serial.println("[LOG] Changed WiFi");
-  Serial.print("  SSID: ");
-  Serial.println(wifiSettings.ssid);
-  Serial.print("  Password: ");
-  Serial.println(wifiSettings.password);
-  saveWiFiSettings(&wifiSettings);
-}
-
-// PLAYコマンド
-void playCommandCallback() {
-  char *folderNumberStr = sCmd.next();
-  if (folderNumberStr == nullptr) {
-    Serial.println(F("[ERROR] No arguments"));
-    printCommandNavi();
-    return;
-  }
-  char *fileNumberStr = sCmd.next();
-  if (folderNumberStr == nullptr) {
-    Serial.println(F("[ERROR] No arguments"));
-    printCommandNavi();
-    return;
-  }
-  int folderNumber = atoi(folderNumberStr);
-  int fileNumber = atoi(fileNumberStr);
-  playerService.playFile(folderNumber, fileNumber);
-}
-
-// STOPコマンド
-void stopCommandCallback() {
-  playerService.stop();
-}
-
-// SLEEPコマンド
-void sleepCommandCallback() {
-  char *secStr = sCmd.next();
-  if (secStr == nullptr) {
-    Serial.println(F("[ERROR] No arguments"));
-    printCommandNavi();
-    return;
-  }
-  int sec = atoi(secStr);
-  ESP.deepSleep(sec * 1000 * 1000, WAKE_RF_DEFAULT);
-  delay(1000);
-}
-
-void defaultCommandCallback(const char *cmd) {
-  Serial.print(F("[ERROR] Unknown command: "));
-  Serial.println(cmd);
-  printCommandNavi();
 }
 
 //-------------------------------------
@@ -243,11 +204,6 @@ void checkWiFi() {
     return;
   }
   tickerCheckWiFi.detach();
-  Serial.println("[INFO] WiFi connected");
-  Serial.print("  IP address: ");
-  Serial.println(WiFi.localIP());
-  Serial.print("  Time: ");
-  Serial.println(getTimeStr());
   onlineLed.On();
   musicScheduler.begin();
   wifiConnectedNotifyFlag = true;
@@ -289,19 +245,9 @@ void onEndCallback() {
 }
 
 //-------------------------------------
-// その他
+// シリアルコマンド関連
 //-------------------------------------
-String getTimeStr(){
-  time_t t = time(NULL);
-  struct tm *tm;
-  tm = localtime(&t);
-  char s[22];
-  sprintf(s, "%04d-%02d-%02d %02d:%02d:%02d",
-    tm->tm_year + 1900, tm->tm_mon+1, tm->tm_mday,
-    tm->tm_hour, tm->tm_min, tm->tm_sec);
-  return String(s);
-}
-
+// 起動時のバナー表示
 void printBannerMessage() {
   Serial.println(F(
     "\n"
@@ -321,7 +267,57 @@ void printBannerMessage() {
   Serial.println(F("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
 }
 
-void printCommandHelp() {
+// SET_WIFIコマンド
+void setWiFiCommandCallback() {
+  config["wifi"]["ssid"] = sCmd.next();
+  config["wifi"]["password"] = sCmd.next();
+  Serial.println("[LOG] Changed WiFi");
+  Serial.print("  ssid: ");
+  Serial.println((const char*)config["wifi"]["ssid"]);
+  Serial.print("  Password: ");
+  Serial.println((const char*)config["wifi"]["password"]);
+  saveConfig();
+}
+
+// PLAYコマンド
+void playCommandCallback() {
+  char *folderNumberStr = sCmd.next();
+  if (folderNumberStr == nullptr) {
+    Serial.println(F("[ERROR] No arguments"));
+    printCommandNavi();
+    return;
+  }
+  char *fileNumberStr = sCmd.next();
+  if (folderNumberStr == nullptr) {
+    Serial.println(F("[ERROR] No arguments"));
+    printCommandNavi();
+    return;
+  }
+  int folderNumber = atoi(folderNumberStr);
+  int fileNumber = atoi(fileNumberStr);
+  playerService.playFile(folderNumber, fileNumber);
+}
+
+// STOPコマンド
+void stopCommandCallback() {
+  playerService.stop();
+}
+
+// SLEEPコマンド
+void sleepCommandCallback() {
+  char *secStr = sCmd.next();
+  if (secStr == nullptr) {
+    Serial.println(F("[ERROR] No arguments"));
+    printCommandNavi();
+    return;
+  }
+  int sec = atoi(secStr);
+  ESP.deepSleep(sec * 1000 * 1000, WAKE_RF_DEFAULT);
+  delay(1000);
+}
+
+// HELPコマンド
+void helpCommandCallback() {
   Serial.println(F(
     "[INFO] Command List\n"
     "  HELP                          show this help message\n"
@@ -332,9 +328,16 @@ void printCommandHelp() {
     "                                再生を停止します\n"
     "  SLEEP sec                     sleep for a specified number of seconds.\n"
     "                                指定した秒数の間スリープします\n"
-    "  SET_WIFI ssid pass            set Wi-Fi SSID & password\n"
-    "                                接続するWi-FiのSSIDとパスワードを設定します\n"
+    "  SET_WIFI ssid pass            set Wi-Fi ssid & password\n"
+    "                                接続するWi-Fiのssidとパスワードを設定します\n"
     ));
+}
+
+// 不明のコマンド
+void defaultCommandCallback(const char *cmd) {
+  Serial.print(F("[ERROR] Unknown command: "));
+  Serial.println(cmd);
+  printCommandNavi();
 }
 
 void printCommandNavi() {
@@ -342,31 +345,21 @@ void printCommandNavi() {
   Serial.println(F("  コマンドの使用方法を調べるにはHELPと入力してください。"));
 }
 
-const char* clientID = "ESP8266";
-const char* username = "token:token_wMgtfkI7dcGCHU4w";
-const char* receive_topic = "yamaken_music_player/to_player";
-const char* sent_topic = "yamaken_music_player/to_webhook";
+//-------------------------------------
+// MQTT
+//-------------------------------------
 
-const char* mqtt_host = "mqtt.beebotte.com";
-const int port = 1833;
-
-void connectBeebotte() {
-  Serial.println(mqttSettings.hostname);
-  Serial.println(mqttSettings.port);
-  Serial.println(mqttSettings.clientID);
-  Serial.println(mqttSettings.username);
-  Serial.println(mqttSettings.receive_topic);
-  Serial.println(mqttSettings.sent_topic);
-  client.setServer(mqttSettings.hostname.c_str(), mqttSettings.port);
-  client.connect(mqttSettings.clientID.c_str(), mqttSettings.username.c_str(), NULL);
+void connectMQTT() {
+  mqttClient.setServer((const char*)config["mqtt"]["hostname"], (int)config["mqtt"]["port"]);
+  mqttClient.connect(config["mqtt"]["client_id"], config["mqtt"]["user_name"], NULL);
   
-  if (client.connected()) {
+  if (mqttClient.connected()) {
     Serial.println("[INFO] MQTT connected");
-    client.setCallback(callback);
-    client.subscribe(mqttSettings.receive_topic.c_str());
+    mqttClient.setCallback(callback);
+    mqttClient.subscribe(config["mqtt"]["receive_topic"]);
   } else {
     Serial.print("[ERROR] MQTT connection failed: ");
-    Serial.println(client.state());
+    Serial.println(mqttClient.state());
   }
 }
 
@@ -378,9 +371,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
   char data_char[MQTT_MAX_PACKET_SIZE];
   strcpy(data_char, (const char*)json["data"]);
   deserializeJson(json, data_char);
-
+  // コマンドを処理
   String command = json["command"];
-  
   if (command == "play") {
     int folderNumber = json["folderNumber"];
     int fileNumber = json["fileNumber"];
@@ -390,6 +382,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 }
 
+// イベントが発生したことを外部に通知する
 void notifyEvent(const char *eventName) {
   StaticJsonDocument<MQTT_MAX_PACKET_SIZE> doc;
   auto json = doc.to<JsonObject>();
@@ -397,6 +390,7 @@ void notifyEvent(const char *eventName) {
   notify(json);
 }
 
+// 「再生」イベントが発生したことを外部に通知する
 void notifyPlay(uint8_t folderNumber, uint8_t fileNumber) {
   StaticJsonDocument<MQTT_MAX_PACKET_SIZE> doc;
   auto json = doc.to<JsonObject>();
@@ -406,6 +400,7 @@ void notifyPlay(uint8_t folderNumber, uint8_t fileNumber) {
   notify(json);
 }
 
+// 外部に任意のデータを通知する
 void notify(JsonObject &dataobj) {
   // Wi-Fiに接続したかどうか確認
   if (WiFi.status() != WL_CONNECTED) {
@@ -418,7 +413,37 @@ void notify(JsonObject &dataobj) {
   json["data"] = data;
   char payload[MQTT_MAX_PACKET_SIZE];
   serializeJson(json, payload);
-  bool a = client.publish(mqttSettings.sent_topic.c_str(), payload);
-  Serial.println(a);
+  bool success = mqttClient.publish(config["mqtt"]["sent_topic"], payload);
+  if (!success) {
+    Serial.println("[ERROR] MQTT Publish Error");
+  }
+}
+
+//-------------------------------------
+// その他
+//-------------------------------------
+// 設定を読み込む
+void loadConfig() {
+  File f = SPIFFS.open("/config.json", "r");
+  deserializeJson(config, f);
+  f.close();
+}
+
+// 設定を保存
+void saveConfig() {
+  File f = SPIFFS.open("/config.json", "w");
+  serializeJson(config, f);
+  f.close();
+}
+
+String getTimeStr(){
+  time_t t = time(NULL);
+  struct tm *tm;
+  tm = localtime(&t);
+  char s[22];
+  sprintf(s, "%04d-%02d-%02d %02d:%02d:%02d",
+    tm->tm_year + 1900, tm->tm_mon+1, tm->tm_mday,
+    tm->tm_hour, tm->tm_min, tm->tm_sec);
+  return String(s);
 }
 
