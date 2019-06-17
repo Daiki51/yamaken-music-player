@@ -27,6 +27,7 @@ def rewrite(file, old, new):
         f.write(text)
 
 def main():
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     download_and_unzip('kroimon/Arduino-SerialCommand')
     download_and_unzip('knolleary/pubsubclient')
     shutil.rmtree('src/pubsubclient/tests')
