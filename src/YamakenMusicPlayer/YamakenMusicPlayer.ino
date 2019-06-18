@@ -45,30 +45,33 @@ Switch playButton(PLAY_SW_PIN);
 JLed playingLed(PLAYING_LED_PIN);
 JLed onlineLed(ONLINE_LED_PIN);
 
+// 音量関係
 int volume = 30 / 2;
 LPF volumeFilter(0.2, false); // ボリュームのローパスフィルタ
 
+// シリアル
 SerialCommand sCmd; // シリアル通信でコマンドを処理するため
 
+// 通信関係
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
+bool isWifiConnecting = false;
+bool isFirstConnect = true;
 
 // 設定ストア(JSON形式)
 StaticJsonDocument<1000> config;
 bool isLoaded = false;
 
-//-------------------------------------
 // タイマー割り込み用
-//-------------------------------------
 Ticker tickerUpdateSensorAndLed;
-Ticker tickerCheckWiFi;
 Ticker tickerUpdatePlayer;
+Ticker tickerCheckWiFi;
 
-bool wifiConnectedNotifyFlag = false;
-bool playButtonPushed = false;
-bool playerUpdateRequested = false;
-bool wifiConnecting = false;
-int wifiConnectCount = 0;
+bool playButtonPushedFlag = false;
+bool playerUpdateFlag = false;
+bool wifiJustConnectedFlag = false;
+
+// その他
 int loop_count = 0;
 
 //-------------------------------------
@@ -81,9 +84,6 @@ void setup() {
 
   // ボリューム用のローパスフィルタを初期化
   volumeFilter.Reset(volume);
-  
-  // タイマーの登録
-  tickerUpdateSensorAndLed.attach_ms(20, updateSensorAndLed);
 
   // コマンドの登録
   sCmd.addCommand("HELP", helpCommandCallback);
@@ -99,13 +99,15 @@ void setup() {
 
   // Wi-Fiに接続
   connectWiFi();
+  configTime(JST, 0, "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
 
   // プレイヤーを初期化
   playerService.begin();
   playerService.onPlay(onPlayCallback);
   playerService.onStop(onStopCallback);
-  
+
   // タイマーの登録
+  tickerUpdateSensorAndLed.attach_ms(20, updateSensorAndLed);
   tickerUpdatePlayer.attach_ms(50, updatePlayer);
 
   // スケジューラーを初期化
@@ -113,7 +115,7 @@ void setup() {
   musicScheduler.onEnd(onEndCallback);
   musicScheduler.bind(&playerService);
   musicScheduler.loadTask();
-  
+
   Serial.println("[INFO] Ready");
 }
 
@@ -123,14 +125,14 @@ void connectWiFi() {
   onlineLed.Breathe(1000).Forever();
   WiFi.mode(WIFI_STA);
   WiFi.begin((const char*)config["wifi"]["ssid"], (const char*)config["wifi"]["password"]);
-  configTime(JST, 0, "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
   tickerCheckWiFi.attach_ms(100, checkWiFi);
-  wifiConnecting = true;
+  isWifiConnecting = true;
 }
 
 void loop() {
   sCmd.readSerial();
-  if (playButtonPushed) {
+  if (playButtonPushedFlag) {
+    // 再生ボタンが押された時
     if (!playerService.isPlaying()) {
       playerService.setRepeat(true);
       playerService.setShuffle(true);
@@ -138,17 +140,20 @@ void loop() {
     } else {
       playerService.stop();
     }
-    playButtonPushed = false;
+    playButtonPushedFlag = false;
   }
-  if (playerUpdateRequested) {
+  if (playerUpdateFlag) {
+    // プレイヤーの状態を更新する時
     playerService.update();
     playerService.setVolume(volume);
     musicScheduler.update();
-    playerUpdateRequested = false;
+    playerUpdateFlag = false;
   }
-  if (wifiConnectedNotifyFlag) {
-    wifiConnectedNotifyFlag = false;
-    if (wifiConnectCount == 0) {
+  if (wifiJustConnectedFlag) {
+    // Wi-Fiの接続に成功した時
+    wifiJustConnectedFlag = false;
+    isWifiConnecting = false;
+    if (isFirstConnect) {
       Serial.println("[INFO] Wi-Fi connected");
     } else {
       Serial.println("[INFO] Wi-Fi reconnected");
@@ -157,23 +162,30 @@ void loop() {
     Serial.println(WiFi.localIP());
     Serial.print("  Time: ");
     Serial.println(getTimeStr());
-    connectMQTT();
-    if (wifiConnectCount == 0) {
-      notifyEvent("startApp");
-    } else {
-      notifyEvent("reconnect");
-    }
-    wifiConnecting = false;
-    wifiConnectCount++;
   }
-  if (!wifiConnecting && WiFi.status() != WL_CONNECTED) {
+  if (!isWifiConnecting && WiFi.status() != WL_CONNECTED) {
+    // Wi-Fiが何らかの理由で切断された時
     Serial.println("[WARN] Wi-Fi disconnected");
     // Wi-Fiに再接続
     connectWiFi();
   }
-  if (mqttClient.connected()) {
-    mqttClient.loop();
+  if (WiFi.status() == WL_CONNECTED && !mqttClient.connected()) {
+    // Wi-Fiに接続したがMQTTにまだ接続していない時
+    // もしくはMQTTが何らかの理由で切断された時
+    if (connectMQTT()) {
+      Serial.println("[INFO] MQTT connected");
+      if (isFirstConnect) {
+        notifyEvent("startApp");
+      } else {
+        notifyEvent("reconnect");
+      }
+      isFirstConnect = false;
+    } else {
+      Serial.print("[ERROR] MQTT connection failed: ");
+      Serial.println(mqttClient.state());
+    }
   }
+  mqttClient.loop();
   loop_count++;
   delay(20);
 }
@@ -187,8 +199,12 @@ void updateSensorAndLed() {
   onlineLed.Update();
   volume = (int)round(volumeFilter.NextValue(round(30.0 * analogRead(VOLUME_PIN) / VOLUME_SENSOR_MAX)));
   if (playButton.pushed()) {
-    playButtonPushed = true;
+    playButtonPushedFlag = true;
   }
+}
+
+void updatePlayer() {
+  playerUpdateFlag = true;
 }
 
 void checkWiFi() {
@@ -206,11 +222,7 @@ void checkWiFi() {
   tickerCheckWiFi.detach();
   onlineLed.On();
   musicScheduler.begin();
-  wifiConnectedNotifyFlag = true;
-}
-
-void updatePlayer() {
-  playerUpdateRequested = true;
+  wifiJustConnectedFlag = true;
 }
 
 //-------------------------------------
@@ -328,8 +340,8 @@ void helpCommandCallback() {
     "                                再生を停止します\n"
     "  SLEEP sec                     sleep for a specified number of seconds.\n"
     "                                指定した秒数の間スリープします\n"
-    "  SET_WIFI ssid pass            set Wi-Fi ssid & password\n"
-    "                                接続するWi-Fiのssidとパスワードを設定します\n"
+    "  SET_WIFI ssid pass            set Wi-Fi SSID & password\n"
+    "                                接続するWi-FiのSSIDとパスワードを設定します\n"
     ));
 }
 
@@ -349,18 +361,15 @@ void printCommandNavi() {
 // MQTT
 //-------------------------------------
 
-void connectMQTT() {
+bool connectMQTT() {
   mqttClient.setServer((const char*)config["mqtt"]["hostname"], (int)config["mqtt"]["port"]);
   mqttClient.connect(config["mqtt"]["client_id"], config["mqtt"]["user_name"], NULL);
-  
-  if (mqttClient.connected()) {
-    Serial.println("[INFO] MQTT connected");
-    mqttClient.setCallback(callback);
-    mqttClient.subscribe(config["mqtt"]["receive_topic"]);
-  } else {
-    Serial.print("[ERROR] MQTT connection failed: ");
-    Serial.println(mqttClient.state());
+  if (!mqttClient.connected()) {
+    return false;
   }
+  mqttClient.setCallback(callback);
+  mqttClient.subscribe(config["mqtt"]["receive_topic"]);
+  return true;
 }
 
 // MQTTのPublishイベントを受け取るコールバック
@@ -446,4 +455,3 @@ String getTimeStr(){
     tm->tm_hour, tm->tm_min, tm->tm_sec);
   return String(s);
 }
-
