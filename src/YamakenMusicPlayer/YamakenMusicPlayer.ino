@@ -17,8 +17,8 @@
 // 定数
 //-------------------------------------
 // ピン番号
-const int PLAYER_RX_PIN = 4;
-const int PLAYER_TX_PIN = 5;
+const int8_t PLAYER_RX_PIN = 4;
+const int8_t PLAYER_TX_PIN = 5;
 const int PLAYING_LED_PIN = 12;
 const int ONLINE_LED_PIN = 13;
 const int PLAY_SW_PIN = 14;
@@ -63,13 +63,14 @@ StaticJsonDocument<1000> config;
 bool isLoaded = false;
 
 // タイマー割り込み用
-Ticker tickerUpdateSensorAndLed;
-Ticker tickerUpdatePlayer;
+//Ticker tickerUpdateSensorAndLed;
+//Ticker tickerUpdatePlayer;
 Ticker tickerCheckWiFi;
 
 bool playButtonPushedFlag = false;
 bool playerUpdateFlag = false;
 bool wifiJustConnectedFlag = false;
+bool isOnline = false;
 
 // その他
 int loop_count = 0;
@@ -107,8 +108,8 @@ void setup() {
   playerService.onStop(onStopCallback);
 
   // タイマーの登録
-  tickerUpdateSensorAndLed.attach_ms(20, updateSensorAndLed);
-  tickerUpdatePlayer.attach_ms(50, updatePlayer);
+//  tickerUpdateSensorAndLed.attach_ms(20, updateSensorAndLed);
+//  tickerUpdatePlayer.attach_ms(20, updatePlayer);
 
   // スケジューラーを初期化
   musicScheduler.onStart(onStartCallback);
@@ -124,6 +125,18 @@ void connectWiFi() {
   // LEDの点滅(スロー)を開始
   onlineLed.Breathe(1000).Forever();
   WiFi.mode(WIFI_STA);
+  if (String((const char*)config["wifi"]["configure_ip"]) == "static") {
+    // 固定IPアドレスの設定
+    IPAddress ip_address;
+    IPAddress dns;
+    IPAddress gateway;
+    IPAddress netmask;
+    ip_address.fromString((const char*)config["wifi"]["ip_address"]);
+    dns.fromString((const char*)config["wifi"]["dns"]);
+    gateway.fromString((const char*)config["wifi"]["gateway"]);
+    netmask.fromString((const char*)config["wifi"]["netmask"]);
+    WiFi.config(ip_address, dns, gateway, netmask);
+  }
   WiFi.begin((const char*)config["wifi"]["ssid"], (const char*)config["wifi"]["password"]);
   tickerCheckWiFi.attach_ms(100, checkWiFi);
   isWifiConnecting = true;
@@ -153,6 +166,7 @@ void loop() {
     // Wi-Fiの接続に成功した時
     wifiJustConnectedFlag = false;
     isWifiConnecting = false;
+    isOnline = true;
     if (isFirstConnect) {
       Serial.println("[INFO] Wi-Fi connected");
     } else {
@@ -166,10 +180,11 @@ void loop() {
   if (!isWifiConnecting && WiFi.status() != WL_CONNECTED) {
     // Wi-Fiが何らかの理由で切断された時
     Serial.println("[WARN] Wi-Fi disconnected");
+    isOnline = false;
     // Wi-Fiに再接続
     connectWiFi();
   }
-  if (WiFi.status() == WL_CONNECTED && !mqttClient.connected()) {
+  if (isOnline && !mqttClient.connected()) {
     // Wi-Fiに接続したがMQTTにまだ接続していない時
     // もしくはMQTTが何らかの理由で切断された時
     if (connectMQTT()) {
@@ -185,9 +200,13 @@ void loop() {
       Serial.println(mqttClient.state());
     }
   }
+  if (loop_count % 5 == 0) {
+    updateSensorAndLed();
+    updatePlayer();
+  }
   mqttClient.loop();
   loop_count++;
-  delay(20);
+  delay(4);
 }
 
 //-------------------------------------

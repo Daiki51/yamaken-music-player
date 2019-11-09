@@ -12,7 +12,7 @@ typedef std::function<void(void)> stop_callback_t;
 
 class PlayerService {
 public:
-  PlayerService(int rx_pin, int tx_pin);
+  PlayerService(int8_t rx_pin, int8_t tx_pin);
   void begin();
   void playFile(uint8_t folderNumber, uint8_t fileNumber);
   void playFolder(uint8_t folderNumber);
@@ -27,6 +27,8 @@ public:
   void update();
 private:
   SoftwareSerial _software_serial;
+  int8_t _rx_pin;
+  int8_t _tx_pin;
   DFRobotDFPlayerMini _player;
   int _volume;
   bool _isPlaying;
@@ -44,4 +46,3 @@ private:
   play_callback_t _playCallback;
   stop_callback_t _stopCallback;
 };
-

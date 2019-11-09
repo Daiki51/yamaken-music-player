@@ -11,8 +11,9 @@ static void defaultStopCallback() {
   // do nothing
 }
 
-PlayerService::PlayerService(int rx_pin, int tx_pin) 
-  : _software_serial(rx_pin, tx_pin) {
+PlayerService::PlayerService(int8_t rx_pin, int8_t tx_pin) {
+  _rx_pin = rx_pin;
+  _tx_pin = tx_pin;
   _isPlaying = false;
   _isFading = false;
   _isWaiting = false;
@@ -32,13 +33,9 @@ PlayerService::PlayerService(int rx_pin, int tx_pin)
 
 void PlayerService::begin() {
   // DEF_playerと通信するためにSoftwareSerialを使用
-  _software_serial.begin(9600);
-  if (!_player.begin(_software_serial)) {
-    Serial.println(F("[ERROR] DFPlayer Mini is unable to begin:"));
-    Serial.println(F("  1.Please recheck the connection!"));
-    Serial.println(F("  2.Please insert the SD card!"));
-    while(true) delay(1);
-  }
+  _software_serial.begin(9600, _rx_pin, _tx_pin);
+  _player.begin(_software_serial);
+  _player.stop();
   Serial.println(F("[INFO] DFPlayer Mini initialized"));
 }
 
@@ -59,7 +56,24 @@ void PlayerService::playFile(uint8_t folderNumber, uint8_t fileNumber) {
 
 void PlayerService::playFolder(uint8_t folderNumber) {
   // 曲順を決定
-  int totalTrack = _player.readFileCountsInFolder(folderNumber); // トラックの数
+  int totalTrack;
+  // トラックの数を取得 (エラーを考慮して数回試行する)
+  for (int i = 0; i < 100; i++) {
+    totalTrack = _player.readFileCountsInFolder(folderNumber);
+    if (totalTrack != -1) {
+      break;
+    }
+    delay(10);
+  }
+  if (totalTrack == -1) {
+    Serial.println("[ERROR] readFileCountsInFolder = -1");
+    while (true) {
+      // プログラム終了
+      delay(1000); 
+    }
+  }
+  Serial.print("[INFO] Total Track: ");
+  Serial.println(totalTrack);
   auto order = new uint8_t[totalTrack];
   for (int i = 0; i < totalTrack; i++) {
     order[i] = i + 1;
@@ -128,9 +142,11 @@ void PlayerService::stop() {
 }
 
 void PlayerService::update() {
-  if (_player.available()) { // 受信している情報がある場合
+  while (_player.available()) { // 受信している情報がある場合
     uint8_t type = _player.readType();
     int value = _player.read();
+    Serial.println("_player.available()");
+    printDetail(type, value);
     // 曲の最後まで到達したとき
     if (type == DFPlayerPlayFinished && !_isWaiting) {
       _isWaiting = true;
