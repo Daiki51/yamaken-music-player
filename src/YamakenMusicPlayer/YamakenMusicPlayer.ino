@@ -25,7 +25,8 @@ const int PLAY_SW_PIN = 14;
 const int VOLUME_PIN = A0;
 
 // ボリュームセンサーのアナログ最大値
-const int VOLUME_SENSOR_MAX = 1001;
+const int VOLUME_SENSOR_MAX = 1024;
+const int VOLUME_SENSOR_MIN = 2;
 
 // 日本標準時(+0900)
 const int JST = 3600*9;
@@ -46,7 +47,7 @@ JLed playingLed(PLAYING_LED_PIN);
 JLed onlineLed(ONLINE_LED_PIN);
 
 // 音量関係
-int volume = 30 / 2;
+int volume = -1;
 LPF volumeFilter(0.2, false); // ボリュームのローパスフィルタ
 
 // シリアル
@@ -73,7 +74,7 @@ bool wifiJustConnectedFlag = false;
 bool isOnline = false;
 
 // その他
-int loop_count = 0;
+int32_t loop_count = 0;
 
 //-------------------------------------
 // setup & loop
@@ -84,6 +85,7 @@ void setup() {
   Serial.println("[INFO] Setup start");
 
   // ボリューム用のローパスフィルタを初期化
+  volume = (int)round(30.0 * getRawVolume());
   volumeFilter.Reset(volume);
 
   // コマンドの登録
@@ -106,6 +108,7 @@ void setup() {
   playerService.begin();
   playerService.onPlay(onPlayCallback);
   playerService.onStop(onStopCallback);
+  playerService.onError(onErrorCallback);
 
   // タイマーの登録
 //  tickerUpdateSensorAndLed.attach_ms(20, updateSensorAndLed);
@@ -204,6 +207,9 @@ void loop() {
     updateSensorAndLed();
     updatePlayer();
   }
+  if (loop_count % 75000 == 0) { // 5分毎に生存報告
+    notifyEvent("heartBeats");
+  }
   mqttClient.loop();
   loop_count++;
   delay(4);
@@ -216,7 +222,8 @@ void updateSensorAndLed() {
   playButton.poll();
   playingLed.Update();
   onlineLed.Update();
-  volume = (int)round(volumeFilter.NextValue(round(30.0 * analogRead(VOLUME_PIN) / VOLUME_SENSOR_MAX)));
+  float rawVolume = getRawVolume();
+  volume = (int)round(30.0 * volumeFilter.NextValue(rawVolume));
   if (playButton.pushed()) {
     playButtonPushedFlag = true;
   }
@@ -260,6 +267,12 @@ void onStopCallback() {
   Serial.println("[INFO] Stop");
   playingLed.Off();
   notifyEvent("stop");
+}
+
+void onErrorCallback(String message) {
+  Serial.print("[ERROR] ");
+  Serial.println(message);
+  notifyError(message);
 }
 
 //-------------------------------------
@@ -404,7 +417,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
   if (command == "play") {
     int folderNumber = json["folderNumber"];
     int fileNumber = json["fileNumber"];
+    playerService.setRepeat(false);
+    playerService.setShuffle(true);
     playerService.playFile(folderNumber, fileNumber);
+  } else if (command == "playFolder") {
+    int folderNumber = json["folderNumber"];
+    playerService.setRepeat(false);
+    playerService.setShuffle(true);
+    playerService.playFolder(folderNumber);
   } else if (command == "stop") {
     playerService.stop();
   }
@@ -425,6 +445,15 @@ void notifyPlay(uint8_t folderNumber, uint8_t fileNumber) {
   json["event"] = "play";
   json["params"]["folderNumber"] = folderNumber;
   json["params"]["fileNumber"] = fileNumber;
+  notify(json);
+}
+
+// エラーが発生したことを外部に通知する
+void notifyError(String errorMessage) {
+  StaticJsonDocument<MQTT_MAX_PACKET_SIZE> doc;
+  auto json = doc.to<JsonObject>();
+  json["event"] = "error";
+  json["params"]["message"] = errorMessage;
   notify(json);
 }
 
@@ -473,4 +502,8 @@ String getTimeStr(){
     tm->tm_year + 1900, tm->tm_mon+1, tm->tm_mday,
     tm->tm_hour, tm->tm_min, tm->tm_sec);
   return String(s);
+}
+
+float getRawVolume() {
+  return fmaxf(fminf(((float)analogRead(VOLUME_PIN) - VOLUME_SENSOR_MIN) / (VOLUME_SENSOR_MAX - VOLUME_SENSOR_MIN), 1.0), 0.0);
 }

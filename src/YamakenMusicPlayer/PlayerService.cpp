@@ -1,13 +1,17 @@
 #include <math.h>
 #include "PlayerService.h"
 
-static void printDetail(uint8_t type, int value);
+static String getDetail(uint8_t type, int value);
 
 static void defaultPlayCallback(uint8_t folderNumber, uint8_t fileNumber) {
   // do nothing
 }
 
 static void defaultStopCallback() {
+  // do nothing
+}
+
+static void defaultErrorCallback(String message) {
   // do nothing
 }
 
@@ -29,6 +33,7 @@ PlayerService::PlayerService(int8_t rx_pin, int8_t tx_pin) {
   }
   _playCallback = defaultPlayCallback;
   _stopCallback = defaultStopCallback;
+  _errorCallback = defaultErrorCallback;
 }
 
 void PlayerService::begin() {
@@ -46,9 +51,10 @@ void PlayerService::playFile(uint8_t folderNumber, uint8_t fileNumber) {
     if (i > 0 && !_repeat) {
       _playQueue[i][0] = -1;
       _playQueue[i][1] = -1;
+    } else {
+      _playQueue[i][0] = folderNumber;
+      _playQueue[i][1] = fileNumber;
     }
-    _playQueue[i][0] = folderNumber;
-    _playQueue[i][1] = fileNumber;
   }
   // キューを再生
   _playQueueOne();
@@ -107,6 +113,7 @@ void PlayerService::_playQueueOne() {
   if (folderNumber == -1) {
     // キューが空なので再生停止
     _isPlaying = false;
+    _stopCallback();
     return;
   }
   _player.volume(0);
@@ -145,26 +152,22 @@ void PlayerService::update() {
   while (_player.available()) { // 受信している情報がある場合
     uint8_t type = _player.readType();
     int value = _player.read();
-    Serial.println("_player.available()");
-    printDetail(type, value);
-    // 曲の最後まで到達したとき
     if (type == DFPlayerPlayFinished && !_isWaiting) {
+      // 曲の最後まで到達したとき
       _isWaiting = true;
       _tickerNextPlay.once_ms(_waitDuration, [this]() {
         _nextPlayRequested = true;
       });
-    }
-    // カードが抜き取られたとき
-    if (type == DFPlayerCardRemoved) {
-      _isPlaying = false;
-      _isWaiting = false;
-      Serial.println(F("[WARNING] SD card removed."));
-      _stopCallback();
-    }
-    // エラーのとき
-    if (type == DFPlayerError) {
-      // 詳細を表示
-      printDetail(type, value);
+    } else if (type == DFPlayerError && value == FileMismatch && !_isWaiting) {
+      // 存在しないファイルを再生しようとしたとき
+      _isWaiting = true;
+      _errorCallback(getDetail(type, value));
+      _tickerNextPlay.once_ms(_waitDuration, [this]() {
+        _nextPlayRequested = true;
+      });
+    } else {
+      // エラーのとき
+      _errorCallback(getDetail(type, value));
     }
   }
   if (_nextPlayRequested) {
@@ -206,52 +209,40 @@ void PlayerService::onStop(stop_callback_t callback) {
   _stopCallback = callback;
 }
 
-void printDetail(uint8_t type, int value) {
+void PlayerService::onError(error_callback_t callback) {
+  _errorCallback = callback;
+}
+
+String getDetail(uint8_t type, int value) {
   switch (type) {
     case TimeOut:
-      Serial.println(F("Time Out!"));
-      break;
+      return F("Time Out!");
     case WrongStack:
-      Serial.println(F("Stack Wrong!"));
-      break;
+      return F("Stack Wrong!");
     case DFPlayerCardInserted:
-      Serial.println(F("Card Inserted!"));
-      break;
+      return F("Card Inserted!");
     case DFPlayerCardRemoved:
-      Serial.println(F("Card Removed!"));
-      break;
+      return F("Card Removed!");
     case DFPlayerCardOnline:
-      Serial.println(F("Card Online!"));
-      break;
+      return F("Card Online!");
     case DFPlayerPlayFinished:
-      Serial.print(F("Number:"));
-      Serial.print(value);
-      Serial.println(F(" Play Finished!"));
-      break;
+      return String(F("Number:")) + value + F(" Play Finished!");
     case DFPlayerError:
-      Serial.print(F("[ERROR] DFPlayerError:"));
       switch (value) {
         case Busy:
-          Serial.println(F("Card not found"));
-          break;
+          return F("DFPlayerError: Card not found");
         case Sleeping:
-          Serial.println(F("Sleeping"));
-          break;
+          return F("DFPlayerError: Sleeping");
         case SerialWrongStack:
-          Serial.println(F("Get Wrong Stack"));
-          break;
+          return F("DFPlayerError: Get Wrong Stack");
         case CheckSumNotMatch:
-          Serial.println(F("Check Sum Not Match"));
-          break;
+          return F("DFPlayerError: Check Sum Not Match");
         case FileIndexOut:
-          Serial.println(F("File Index Out of Bound"));
-          break;
+          return F("DFPlayerError: File Index Out of Bound");
         case FileMismatch:
-          Serial.println(F("Cannot Find File"));
-          break;
+          return F("DFPlayerError: Cannot Find File");
         case Advertise:
-          Serial.println(F("In Advertise"));
-          break;
+          return F("DFPlayerError: In Advertise");
       }
       break;
   }

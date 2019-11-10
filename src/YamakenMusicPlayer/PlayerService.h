@@ -9,6 +9,7 @@ const int MAX_FILE = 0x100;
 
 typedef std::function<void(uint8_t, uint8_t)> play_callback_t;
 typedef std::function<void(void)> stop_callback_t;
+typedef std::function<void(String)> error_callback_t;
 
 class PlayerService {
 public:
@@ -24,6 +25,7 @@ public:
   bool isPlaying();
   void onPlay(play_callback_t callback);
   void onStop(stop_callback_t callback);
+  void onError(error_callback_t callback);
   void update();
 private:
   SoftwareSerial _software_serial;
@@ -45,4 +47,5 @@ private:
   void _nextPlay();
   play_callback_t _playCallback;
   stop_callback_t _stopCallback;
+  error_callback_t _errorCallback;
 };
